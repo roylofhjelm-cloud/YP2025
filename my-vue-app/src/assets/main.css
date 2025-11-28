@@ -1,0 +1,36 @@
+:root {
+  --blue: #2563eb;
+  --gray: #f9fafb;
+}
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--gray);
+  color: #222;
+}
+header {
+  background: var(--blue);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+header a {
+  color: white;
+  text-decoration: none;
+  margin-left: 1rem;
+  font-weight: 500;
+}
+header a:hover {
+  opacity: .8;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  transition: transform .15s ease;
+}
+.card:hover { transform: translateY(-2px); }
