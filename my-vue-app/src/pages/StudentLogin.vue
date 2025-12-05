@@ -65,9 +65,11 @@ export default {
 .login-page{
   max-width:400px;
   margin:3rem auto;
-  background:#fff;
+  background:var(--surface);
   padding:2rem;
   border-radius:12px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 
 input,button{
@@ -78,10 +80,10 @@ input,button{
 }
 
 button{
-  background:#4f46e5;
+  background:var(--primary-gradient);
   color:white;
   border:0;
   border-radius:8px;
 }
-.error{color:red;}
+.error{color:var(--error-text);}
 </style>

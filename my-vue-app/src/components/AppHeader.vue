@@ -17,6 +17,16 @@
           </router-link>
         </nav>
 
+        <button
+          class="theme-toggle"
+          type="button"
+          :aria-label="theme === 'dark' ? 'Växla till ljust läge' : 'Växla till mörkt läge'"
+          @click="$emit('toggle-theme')"
+        >
+          <span class="icon">{{ theme === 'dark' ? '🌙' : '☀️' }}</span>
+          <span class="label">{{ theme === 'dark' ? 'Mörkt' : 'Ljust' }}</span>
+        </button>
+
         <router-link
           v-if="session.name"
           :to="accountLink"
@@ -45,6 +55,13 @@
 <script>
 export default {
   name: "AppHeader",
+  props: {
+    theme: {
+      type: String,
+      default: "light",
+    },
+  },
+  emits: ["toggle-theme"],
   data() {
     return {
       session: {
@@ -156,9 +173,9 @@ export default {
 
 <style scoped>
 .app-header {
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -179,7 +196,7 @@ export default {
   text-decoration: none;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1d4ed8;
+  color: var(--primary-strong);
   letter-spacing: 0.01em;
 }
 
@@ -199,7 +216,7 @@ export default {
 
 .nav-link {
   text-decoration: none;
-  color: #475569;
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 0.95rem;
   padding: 0.4rem 0.95rem;
@@ -208,14 +225,42 @@ export default {
 }
 
 .nav-link:hover {
-  color: #1d4ed8;
-  background: #eef2ff;
+  color: var(--primary);
+  background: var(--accent);
 }
 
 .nav-link.active {
   color: white;
-  background: linear-gradient(135deg, #4f46e5, #2563eb);
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+  background: var(--primary-gradient);
+  box-shadow: 0 10px 20px var(--chip-shadow);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--chip-border);
+  background: var(--accent);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 8px 16px var(--chip-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle .icon {
+  font-size: 0.95rem;
+}
+
+.theme-toggle .label {
+  font-size: 0.85rem;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px var(--chip-shadow);
 }
 
 .account-chip {
@@ -223,23 +268,23 @@ export default {
   align-items: center;
   gap: 0.6rem;
   text-decoration: none;
-  background: #eef2ff;
+  background: var(--accent);
   border-radius: 999px;
   padding: 0.25rem 0.9rem;
-  border: 1px solid rgba(79, 70, 229, 0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--chip-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .account-chip:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 10px 18px var(--chip-shadow);
 }
 
 .account-chip .avatar {
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  background: var(--primary-gradient);
   color: white;
   font-size: 0.85rem;
   font-weight: 700;
@@ -252,14 +297,14 @@ export default {
   display: flex;
   flex-direction: column;
   line-height: 1.1;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .account-chip .label small {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .account-chip .label strong {
@@ -269,7 +314,7 @@ export default {
 .logout-btn {
   border: none;
   background: transparent;
-  color: #dc2626;
+  color: var(--danger);
   font-weight: 600;
   cursor: pointer;
   padding: 0.4rem 0.6rem;
@@ -278,7 +323,7 @@ export default {
 }
 
 .logout-btn:hover {
-  background: rgba(220, 38, 38, 0.1);
+  background: var(--danger-soft);
 }
 
 @media (max-width: 640px) {

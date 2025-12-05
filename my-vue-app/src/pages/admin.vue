@@ -82,9 +82,11 @@ export default {
 .admin-page{
   max-width:600px;
   margin:2rem auto;
-  background:white;
+  background:var(--surface);
   padding:2rem;
   border-radius:12px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 input,select,button{ 
   display:block; 
@@ -98,7 +100,7 @@ input,select,button{
   display: inline-block;
   padding: 0.7rem 1.2rem;
   border-radius: 10px;
-  background: linear-gradient(135deg,#4f46e5,#2563eb);
+  background: var(--primary-gradient);
   color: white;
   text-decoration: none;
   font-weight: 600;

@@ -59,11 +59,11 @@ export default {
 
 <style scoped>
 .question-card {
-  background: #f8fafc;
+  background: var(--surface-alt);
   border-radius: 22px;
   padding: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -77,24 +77,26 @@ export default {
 .question-card__label {
   margin: 0 0 0.2rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text);
 }
 .type-select {
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.8);
+  border: 1px solid var(--border);
   padding: 0.35rem 0.75rem;
-  background: #fff;
+  background: var(--surface);
+  color: var(--text);
 }
 .remove-btn {
   border: none;
-  background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  background: var(--error-bg);
+  color: var(--error-text);
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
   cursor: pointer;
   font-weight: 600;
 }
 .remove-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--error-bg);
+  opacity: 0.85;
 }
 </style>

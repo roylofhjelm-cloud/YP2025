@@ -167,11 +167,11 @@ export default {
   padding: 0 1rem;
 }
 .card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 18px;
   padding: 2rem;
-  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.08);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: var(--shadow-strong);
+  border: 1px solid var(--border);
 }
 .card.empty {
   text-align: center;
@@ -180,13 +180,13 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.3em;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   margin-bottom: 0.8rem;
 }
 h1 {
   margin: 0 0 1.25rem;
   font-size: 2rem;
-  color: #1f2a37;
+  color: var(--text);
 }
 ul {
   list-style: none;
@@ -196,7 +196,7 @@ ul {
   gap: 0.4rem;
 }
 li strong {
-  color: #475569;
+  color: var(--text-muted);
   margin-right: 0.4rem;
 }
 .actions {
@@ -206,7 +206,7 @@ li strong {
 }
 .results {
   margin-bottom: 1.5rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.25);
+  border-top: 1px solid var(--border);
   padding-top: 1.5rem;
 }
 .results h3 {
@@ -217,7 +217,7 @@ li strong {
   justify-content: space-between;
   align-items: center;
   padding: 0.6rem 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  border-bottom: 1px solid var(--border);
 }
 .result-row:last-child {
   border-bottom: none;
@@ -227,13 +227,13 @@ li strong {
   font-weight: 600;
 }
 .result-row small {
-  color: #64748b;
+  color: var(--text-muted);
 }
 .result-row .score {
   text-align: right;
 }
 .empty-state {
-  color: #94a3b8;
+  color: var(--text-muted);
   font-style: italic;
 }
 .btn {
@@ -242,15 +242,15 @@ li strong {
   border-radius: 12px;
   padding: 0.7rem 1.4rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  background: var(--primary-gradient);
   color: white;
   text-decoration: none;
   text-align: center;
   flex: none;
 }
 .btn.secondary {
-  background: rgba(79, 70, 229, 0.12);
-  color: #312e81;
+  background: var(--accent);
+  color: var(--primary-strong);
 }
 .btn.secondary:hover {
   background: rgba(79, 70, 229, 0.25);

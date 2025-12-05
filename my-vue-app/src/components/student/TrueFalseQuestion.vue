@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="tf">
     <p class="q-text">{{ data.text }}</p>
 
     <label>
@@ -68,11 +68,11 @@ export default {
 }
 h4 {
   margin-bottom: 0.4rem;
-  color: #0f172a;
+  color: var(--text);
 }
 label {
-  background: #f8fafc;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
   padding: 0.55rem 0.8rem;
   border-radius: 12px;
   display: flex;

@@ -55,13 +55,13 @@ export default {
   width: 100%;
   padding: 0.7rem 0.9rem;
   border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: #f8fafc;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
   transition: border-color 0.2s;
 }
 .blank-row input:focus {
   outline: none;
-  border-color: #6366f1;
-  background: #fff;
+  border-color: var(--primary);
+  background: var(--surface);
 }
 </style>

@@ -105,11 +105,11 @@ export default {
   gap: 0.75rem;
   padding: 0.35rem 0.6rem;
   border-radius: 8px;
-  background: #f9fafb;
+  background: var(--surface-alt);
 }
 .order-index {
   font-weight: 600;
-  color: #475569;
+  color: var(--text-muted);
 }
 .order-text {
   flex: 1;

@@ -40,11 +40,21 @@
     </div>
 
     <div v-if="showResults" class="result">
-      <div class="score-card">
-        <p>Resultat</p>
-        <strong>{{ score }}/{{ questions.length }}</strong>
-        <small>rätta svar</small>
+      <div class="score-card" :class="score >= 70 ? 'pass' : 'fail'">
+        <p class="score-label">{{ score >= 70 ? 'Bra jobbat!' : 'Försök igen!' }}</p>
+
+        <div class="score-value">
+          <span>{{ animatedScore }}%</span>
+        </div>
+
+        <transition name="slide-fade">
+          <div v-if="xpGained > 0" class="xp-banner">
+            +{{ xpGained }} XP 🎉
+          </div>
+        </transition>
       </div>
+
+      <canvas v-if="score >= 70" ref="confettiCanvas" class="confetti"></canvas>
     </div>
   </div>
 
@@ -75,7 +85,8 @@ export default {
       questions: [],
       answers: [],
       score: 0,
-      percentage: 0,
+      animatedScore: 0,
+      xpGained: 0,
       showResults: false,
       typeLabels: {
         mcq: "Flerval",
@@ -128,62 +139,97 @@ export default {
         : (this.answers[index] = value);
     },
 
-    async checkAnswers() {
-      let correct = 0;
-
-      this.questions.forEach((q, i) => {
-        const answer = this.answers[i];
-        if (answer && answer.correct === true) {
-          correct++;
+    startScoreAnimation() {
+      const target = this.score;
+      let start = 0;
+      const step = () => {
+        if (start < target) {
+          start++;
+          this.animatedScore = start;
+          requestAnimationFrame(step);
         }
-      });
-
-      const total = this.questions.length;
-      const percent = Math.round((correct / total) * 100);
-
-      this.score = correct;
-      this.percentage = percent;
-      this.showResults = true;
-
-      this.saveResult(percent);
+      };
+      requestAnimationFrame(step);
     },
 
-    async saveResult(percent) {
-      const userId = localStorage.getItem("student_id");
-      const exerciseId = this.exercise?.Exercise_Id;
+    triggerConfetti() {
+      const canvas = this.$refs.confettiCanvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
 
-      if (!userId || !exerciseId) return;
+      let pieces = new Array(80).fill().map(() => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        size: 8 + Math.random() * 8,
+        dy: 2 + Math.random() * 3,
+        dx: -2 + Math.random() * 4,
+        color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+      }));
 
-      try {
-        const res = await fetch("http://localhost/larportalen2025/api/save_result.php", {
+      function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p) => {
+          p.x += p.dx;
+          p.y += p.dy;
+          if (p.y > canvas.height) p.y = -10;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        });
+        requestAnimationFrame(update);
+      }
+      update();
+    },
+
+    async checkAnswers() {
+      // 1️⃣ Calculate score (you already had this part)
+      let correct = 0;
+      this.questions.forEach((q, i) => {
+        const ans = this.answers[i];
+        if (ans && ans.correct === true) correct++;
+      });
+
+      this.score = Math.round((correct / this.questions.length) * 100);
+      this.showResults = true;
+      this.$nextTick(() => this.startScoreAnimation());
+
+      const user_id = localStorage.getItem("student_id");
+      const exercise_id = this.$route.params.id;
+
+      // 2️⃣ Save score + XP using your endpoint
+      if (user_id) {
+        await fetch("http://localhost/larportalen2025/api/save_results.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_id: userId,
-            exercise_id: exerciseId,
-            score: percent,
-            total: 100,
+            user_id,
+            exercise_id,
+            score: this.score
           }),
-        });
-
-        const data = await res.json();
-        console.log("✅ Result saved:", data);
-
-        if (data.passed) {
-          alert(`✅ Passed! (${data.percent}%) +50 XP`);
-        } else {
-          alert(`❌ Failed (${data.percent}%). Try again`);
-        }
-      } catch (err) {
-        console.error("❌ Could not save result", err);
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("💾 Saved:", data);
+            this.xpGained = data?.xp_gained ?? 0;
+            if (data.xp_gained > 0) {
+              this.fireConfetti(); // 🎉 Celebrate only if gained XP
+            }
+          })
+          .catch(err => console.error("❌ Could not save result", err));
       }
+    },
+
+    fireConfetti() {
+      this.triggerConfetti();
     },
 
     resetQuiz() {
       this.answers = Array(this.questions.length).fill(null);
       this.showResults = false;
       this.score = 0;
-      this.percentage = 0;
+      this.animatedScore = 0;
+      this.xpGained = 0;
     },
   },
 };
@@ -193,19 +239,19 @@ export default {
 .exercise-page {
   max-width: 900px;
   margin: 2rem auto;
-  background: #f8fafc;
+  background: var(--surface-alt);
   padding: 2rem;
   border-radius: 30px;
-  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: var(--shadow-strong);
+  border: 1px solid var(--border);
 }
 .question-block {
-  background: #fff;
+  background: var(--surface);
   border-radius: 18px;
   padding: 1.4rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
 }
 .question-header {
   display: flex;
@@ -216,14 +262,14 @@ export default {
 .chip {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #4338ca;
-  background: rgba(67, 56, 202, 0.12);
+  color: var(--primary-strong);
+  background: var(--accent);
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
 }
 .question-type {
   text-transform: capitalize;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 .actions {
@@ -233,7 +279,7 @@ export default {
   margin-top: 1rem;
 }
 .btn {
-  background: #2563eb;
+  background: var(--primary);
   color: white;
   padding: 0.85rem 1.5rem;
   border-radius: 12px;
@@ -248,33 +294,79 @@ export default {
 }
 .loading {
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   margin-top: 2rem;
 }
 .result {
   margin-top: 2rem;
-  display: flex;
+  display: grid;
   justify-content: center;
+  position: relative;
 }
 .score-card {
   background: #fff;
-  padding: 1.5rem 2rem;
+  padding: 2rem;
   border-radius: 16px;
-  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2);
   text-align: center;
+  font-size: 1.4rem;
+  width: 260px;
+  margin: auto;
+  box-shadow: 0 0 0 3px transparent;
+  transition: all 0.6s ease;
 }
-.score-card strong {
-  font-size: 2rem;
-  color: #16a34a;
+.score-card.pass {
+  box-shadow: 0 0 12px 3px rgba(34, 197, 94, 0.35);
 }
-.score-card small {
-  display: block;
-  color: #94a3b8;
+.score-card.fail {
+  animation: shake 0.5s;
+  box-shadow: 0 0 12px 3px rgba(239, 68, 68, 0.4);
+}
+@keyframes shake {
+  0% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+.score-value span {
+  font-size: 3.5rem;
+  font-weight: 700;
+  display: inline-block;
+  animation: pop 0.6s ease;
+}
+@keyframes pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.xp-banner {
+  margin-top: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+.slide-fade-enter-active {
+  transition: all .5s ease;
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.confetti {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
 }
 .unknown-question {
   padding: 1rem;
   border-radius: 12px;
-  background: rgba(248, 113, 113, 0.15);
-  color: #b91c1c;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 </style>

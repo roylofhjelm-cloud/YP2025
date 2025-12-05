@@ -25,12 +25,17 @@ export default {
 </script>
 
 <style scoped>
-.materials { max-width: 900px; margin: auto; padding: 2rem; }
+.materials {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+}
 .card {
-  background: white;
+  background: var(--surface);
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 </style>

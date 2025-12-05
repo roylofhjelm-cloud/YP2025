@@ -167,18 +167,18 @@ export default {
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--primary);
   margin-bottom: 0.3rem;
 }
 
 .subtitle {
-  color: #555;
+  color: var(--text-muted);
   margin-bottom: 2rem;
 }
 
 .loading,
 .no-data {
-  color: #777;
+  color: var(--text-muted);
   text-align: center;
   margin-top: 4rem;
   font-style: italic;
@@ -191,12 +191,13 @@ export default {
 }
 
 .exercise-card {
-  background: white;
+  background: var(--surface);
   padding: 1.25rem 1.5rem;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
   text-decoration: none;
-  color: #222;
+  color: var(--text);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
@@ -221,15 +222,15 @@ export default {
 
 .desc {
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-muted);
   margin-bottom: 1rem;
   line-height: 1.4;
 }
 
 .type-tag {
   align-self: flex-start;
-  background: #e0e7ff;
-  color: #1e3a8a;
+  background: var(--tag-bg);
+  color: var(--tag-text);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.3rem 0.6rem;
@@ -254,18 +255,18 @@ export default {
 }
 
 .result-badge.passed {
-  background: #ecfccb;
-  color: #3f6212;
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 
 .result-badge.failed {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
 .profile-block {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
   margin-bottom: 2rem;

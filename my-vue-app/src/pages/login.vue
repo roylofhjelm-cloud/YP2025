@@ -72,9 +72,11 @@ export default {
 .login-page {
   max-width: 400px;
   margin: 3rem auto;
-  background: white;
+  background: var(--surface);
   padding: 2rem;
   border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 input, button {
   display: block;
@@ -83,12 +85,12 @@ input, button {
   padding: 0.6rem;
 }
 button {
-  background: #2563eb;
+  background: var(--primary);
   border: none;
   color: white;
   border-radius: 8px;
 }
 .error {
-  color: red;
+  color: var(--error-text);
 }
 </style>

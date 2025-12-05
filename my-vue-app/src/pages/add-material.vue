@@ -62,10 +62,11 @@ export default {
 .add-material {
   max-width: 700px;
   margin: 2rem auto;
-  background: white;
+  background: var(--surface);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 
 form {
@@ -78,10 +79,10 @@ input,
 textarea {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 1rem;
-  background: #f8fafc;
+  background: var(--surface-alt);
 }
 
 textarea {
@@ -94,7 +95,7 @@ textarea {
   padding: 0.85rem 1.3rem;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #4f46e5, #2563eb);
+  background: var(--primary-gradient);
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -107,10 +108,10 @@ textarea {
 
 .message {
   margin-top: 0.5rem;
-  color: #0f5132;
-  background: #d1e7dd;
+  color: var(--success-text);
+  background: var(--success-bg);
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
-  border: 1px solid #badbcc;
+  border: 1px solid var(--success-text);
 }
 </style>

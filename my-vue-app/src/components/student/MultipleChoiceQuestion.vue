@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="mcq">
     <p class="q-text">{{ data.text }}</p>
 
     <div
       v-for="(opt, i) in data.options"
       :key="i"
-      class="option"
+      class="mcq-option"
     >
       <label>
         <input
@@ -65,11 +65,11 @@ export default {
 }
 h4 {
   margin-bottom: 0.5rem;
-  color: #0f172a;
+  color: var(--text);
 }
 .mcq-option {
-  background: #f8fafc;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 0.65rem 0.9rem;
   transition: border-color 0.2s, background 0.2s;
@@ -78,7 +78,7 @@ h4 {
   margin-right: 0.4rem;
 }
 .mcq-option:hover {
-  border-color: #6366f1;
-  background: rgba(99, 102, 241, 0.08);
+  border-color: var(--primary);
+  background: var(--accent);
 }
 </style>
