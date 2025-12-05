@@ -1,261 +1,98 @@
 <template>
-  <section class="account-page">
-    <div class="card" v-if="session.role">
-      <p class="eyebrow">Aktivt konto</p>
-      <h1>{{ session.name }}</h1>
-      <ul>
-        <li><strong>Roll:</strong> {{ roleLabel }}</li>
-        <li><strong>ID:</strong> {{ session.id }}</li>
-      </ul>
+  <div class="account-page" v-if="profile">
+    <h1>👤 {{ profile.user.username }}</h1>
 
-      <div
-        v-if="session.role === 'student'"
-        class="results"
-      >
-        <h3>Senaste resultat</h3>
-        <div v-if="results && results.length">
-          <article
-            v-for="result in results"
-            :key="result.Result_Id"
-            class="result-row"
-          >
-            <div>
-              <p class="title">{{ result.Title }}</p>
-              <small>{{ formatType(result.Type) }}</small>
-            </div>
-            <div class="score">
-              <strong>{{ result.Score }}</strong>
-              <small v-if="result.Completed">klar</small>
-            </div>
-          </article>
-        </div>
-        <p v-else class="empty-state">Inga resultat sparade ännu.</p>
+    <div class="card">
+      <p><strong>Role:</strong> Student</p>
+      <p><strong>XP:</strong> {{ profile.user.xp }}</p>
+
+      <p><strong>Level:</strong> {{ profile.level.level_name }}</p>
+
+      <div class="xp-bar">
+        <div class="fill" :style="{ width: xpPercent + '%' }"></div>
       </div>
 
-      <div class="actions">
-        <router-link
-          v-if="session.role === 'student'"
-          to="/home"
-          class="btn secondary"
-        >
-          Studentvy
-        </router-link>
-        <router-link
-          v-if="session.role === 'admin'"
-          to="/admin"
-          class="btn secondary"
-        >
-          Adminpanel
-        </router-link>
-        <button class="btn" @click="logout">
-          Logga ut
-        </button>
-      </div>
+      <small v-if="profile.next_level_xp">
+        Next level at {{ profile.next_level_xp }} XP
+      </small>
+      <small v-else>🥳 Max level reached!</small>
     </div>
 
-    <div class="card empty" v-else>
-      <h2>Ingen inloggad användare</h2>
-      <p>Logga in som student eller admin för att visa kontodetaljer.</p>
-      <div class="actions">
-        <router-link to="/login-student" class="btn secondary">Student</router-link>
-        <router-link to="/login" class="btn">Admin</router-link>
-      </div>
+    <div class="card stats">
+      <p><strong>Completed Exercises:</strong> {{ profile.stats.completed_exercises }}</p>
+      <p><strong>Average Score:</strong> {{ profile.stats.average_score }}%</p>
     </div>
-  </section>
+
+    <button @click="goHome" class="btn">⬅️ Back</button>
+  </div>
+
+  <div v-else class="loading">Loading...</div>
 </template>
 
 <script>
 export default {
-  name: "AccountPage",
   data() {
-    return {
-      session: {
-        role: null,
-        name: "",
-        id: null,
-      },
-      results: [],
-    };
+    return { profile: null };
   },
   computed: {
-    roleLabel() {
-      if (this.session.role === "admin") return "Admin";
-      if (this.session.role === "student") return "Student";
-      return "";
-    },
+    xpPercent() {
+      if (!this.profile.next_level_xp) return 100;
+      const xp = this.profile.user.xp;
+      return Math.min(100, (xp / this.profile.next_level_xp) * 100);
+    }
   },
-  mounted() {
-    this.refreshSession();
-    window.addEventListener("storage", this.refreshSession);
-  },
-  beforeUnmount() {
-    window.removeEventListener("storage", this.refreshSession);
+  async mounted() {
+    const uid = localStorage.getItem("student_id") || localStorage.getItem("admin_id");
+    if (!uid) return;
+    const res = await fetch(`http://localhost/larportalen2025/api/get_user_stats.php?user_id=${uid}`);
+    this.profile = await res.json();
   },
   methods: {
-    async refreshSession() {
-      const adminId = localStorage.getItem("admin_id");
-      const studentId = localStorage.getItem("student_id");
-
-      if (adminId) {
-        this.session = {
-          role: "admin",
-          name: localStorage.getItem("admin_name") || "Admin",
-          id: adminId,
-        };
-        this.results = [];
-      } else if (studentId) {
-        this.session = {
-          role: "student",
-          name: localStorage.getItem("student_name") || "Student",
-          id: studentId,
-        };
-        await this.loadResults(studentId);
-      } else {
-        this.session = {
-          role: null,
-          name: "",
-          id: null,
-        };
-        this.results = [];
-      }
-    },
-    async loadResults(id) {
-      const userId = id || localStorage.getItem("student_id") || localStorage.getItem("user_id");
-      if (!userId) {
-        this.results = [];
-        return;
-      }
-
-      try {
-        const res = await fetch(`http://localhost/larportalen2025/api/get_user_results.php?user_id=${userId}`);
-        this.results = await res.json();
-      } catch (err) {
-        console.error("Failed loading results", err);
-        this.results = [];
-      }
-    },
-    formatType(type) {
-      const labels = {
-        mcq: "Flerval",
-        true_false: "Sant/Falskt",
-        ordering: "Ordning",
-        match: "Para ihop",
-        fill_blank: "Textluckor",
-      };
-      return labels[type] || type;
-    },
-    logout() {
-      if (this.session.role === "admin") {
-        localStorage.removeItem("admin_id");
-        localStorage.removeItem("admin_name");
-        this.$router.push("/login");
-      } else if (this.session.role === "student") {
-        localStorage.removeItem("student_id");
-        localStorage.removeItem("student_name");
-        this.$router.push("/login-student");
-      }
-      this.refreshSession();
-    },
-  },
+    goHome() {
+      this.$router.push("/home");
+    }
+  }
 };
 </script>
 
 <style scoped>
 .account-page {
-  max-width: 640px;
-  margin: 2.5rem auto;
-  padding: 0 1rem;
+  max-width: 600px;
+  margin: 2rem auto;
+  text-align: left;
 }
 .card {
-  background: var(--surface);
-  border-radius: 18px;
-  padding: 2rem;
-  box-shadow: var(--shadow-strong);
-  border: 1px solid var(--border);
+  background: #fff;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  border: 1px solid #ccc;
 }
-.card.empty {
-  text-align: center;
+.xp-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: 8px;
+  background: #eee;
+  margin-top: 8px;
 }
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-bottom: 0.8rem;
+.fill {
+  height: 100%;
+  background: #34d399;
+  border-radius: 8px;
 }
-h1 {
-  margin: 0 0 1.25rem;
-  font-size: 2rem;
-  color: var(--text);
-}
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.75rem;
-  display: grid;
-  gap: 0.4rem;
-}
-li strong {
-  color: var(--text-muted);
-  margin-right: 0.4rem;
-}
-.actions {
-  display: flex;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-}
-.results {
-  margin-bottom: 1.5rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-.results h3 {
-  margin: 0 0 0.8rem;
-}
-.result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--border);
-}
-.result-row:last-child {
-  border-bottom: none;
-}
-.result-row .title {
-  margin: 0;
-  font-weight: 600;
-}
-.result-row small {
-  color: var(--text-muted);
-}
-.result-row .score {
-  text-align: right;
-}
-.empty-state {
-  color: var(--text-muted);
-  font-style: italic;
+.stats p {
+  margin: 0.25rem 0;
 }
 .btn {
+  padding: 0.85rem 1.5rem;
+  background: #2563eb;
+  color: white;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  border-radius: 12px;
-  padding: 0.7rem 1.4rem;
-  font-weight: 600;
-  background: var(--primary-gradient);
-  color: white;
-  text-decoration: none;
+}
+.loading {
   text-align: center;
-  flex: none;
-}
-.btn.secondary {
-  background: var(--accent);
-  color: var(--primary-strong);
-}
-.btn.secondary:hover {
-  background: rgba(79, 70, 229, 0.25);
-}
-.btn:hover {
-  opacity: 0.95;
+  color: #777;
 }
 </style>
