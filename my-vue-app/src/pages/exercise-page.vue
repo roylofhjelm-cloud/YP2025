@@ -69,6 +69,7 @@ import TrueFalseQuestion from "@/components/student/TrueFalseQuestion.vue";
 import OrderingQuestion from "@/components/student/OrderingQuestion.vue";
 import MatchQuestion from "@/components/student/MatchQuestion.vue";
 import FillBlankQuestion from "@/components/student/FillBlankQuestion.vue";
+import { API_BASE } from "@/apiConfig";
 
 export default {
   name: "ExercisePage",
@@ -100,9 +101,7 @@ export default {
   async mounted() {
     const id = this.$route.params.id;
     try {
-      const res = await fetch(
-        `http://localhost/larportalen2025/api/exercise.php?id=${id}`
-      );
+      const res = await fetch(`${API_BASE}/exercise.php?id=${id}`);
       const data = await res.json();
 
       this.exercise = data.exercise;
@@ -199,7 +198,7 @@ export default {
 
       // 2️⃣ Save score + XP using your endpoint
       if (user_id) {
-        await fetch("http://localhost/larportalen2025/api/save_result.php", {
+        await fetch(`${API_BASE}/save_result.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

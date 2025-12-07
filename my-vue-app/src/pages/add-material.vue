@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
+
 export default {
   name: "AddMaterial",
   data() {
@@ -35,7 +37,7 @@ export default {
           Created_By: localStorage.getItem("admin_id") || null,
         };
 
-        const res = await fetch("http://localhost/larportalen2025/api/materials.php", {
+        const res = await fetch(`${API_BASE}/materials.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

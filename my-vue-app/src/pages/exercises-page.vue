@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
 export default {
   name: "ExercisePage",
   data() {
@@ -33,7 +34,7 @@ export default {
   async mounted() {
     const id = this.$route.params.id; // get /exercise/:id from router
     try {
-      const res = await fetch(`http://localhost/larportalen2025/api/exercise.php?id=${id}`);
+      const res = await fetch(`${API_BASE}/exercise.php?id=${id}`);
       const data = await res.json();
       this.exercise = data.exercise;
       this.questions = data.questions;

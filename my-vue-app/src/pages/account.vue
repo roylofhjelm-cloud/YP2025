@@ -30,6 +30,8 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
+
 export default {
   data() {
     return { profile: null };
@@ -47,7 +49,7 @@ export default {
   async mounted() {
     const uid = localStorage.getItem("student_id") || localStorage.getItem("admin_id");
     if (!uid) return;
-    const res = await fetch(`http://localhost/larportalen2025/api/get_user_stats.php?user_id=${uid}`);
+    const res = await fetch(`${API_BASE}/get_user_stats.php?user_id=${uid}`);
     this.profile = await res.json();
   },
   methods: {

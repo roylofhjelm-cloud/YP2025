@@ -81,6 +81,8 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
+
 export default {
   name: "HomePage",
   data() {
@@ -120,7 +122,7 @@ export default {
     }
 
     try {
-      const ex = await fetch("http://localhost/larportalen2025/api/exercises.php");
+      const ex = await fetch(`${API_BASE}/exercises.php`);
       const data = await ex.json();
       this.exercises = Array.isArray(data) ? data : data.exercises || [];
     } catch (err) {
@@ -129,9 +131,7 @@ export default {
     }
 
     try {
-      const res = await fetch(
-        `http://localhost/larportalen2025/api/user_progress.php?user_id=${this.user.id}`
-      );
+      const res = await fetch(`${API_BASE}/user_progress.php?user_id=${this.user.id}`);
       this.progress = await res.json();
     } catch (err) {
       console.error("Error fetching progress:", err);

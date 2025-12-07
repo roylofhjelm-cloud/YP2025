@@ -46,6 +46,8 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
+
 export default {
   data() {
     return {
@@ -55,7 +57,7 @@ export default {
   },
 
   async mounted() {
-    const res = await fetch("http://localhost/larportalen2025/api/materials.php");
+    const res = await fetch(`${API_BASE}/materials.php`);
     this.materials = await res.json();
   },
   methods: {

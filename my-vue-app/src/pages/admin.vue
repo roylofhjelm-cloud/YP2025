@@ -244,6 +244,7 @@ import TrueFalseEditor from "@/components/exercises/editors/TrueFalseEditor.vue"
 import OrderingEditor from "@/components/exercises/editors/OrderingEditor.vue";
 import MatchEditor from "@/components/exercises/editors/MatchEditor.vue";
 import FillBlankEditor from "@/components/exercises/editors/FillBlankEditor.vue";
+import { API_BASE } from "@/apiConfig";
 
 export default {
   name: "AdminPage",
@@ -270,7 +271,7 @@ export default {
       editExercise: null,
       editMaterial: null,
       editExerciseQuestions: [],
-      apiBase: "http://localhost/larportalen2025/api",
+      apiBase: API_BASE,
     };
   },
 
@@ -285,7 +286,7 @@ export default {
       this.loadingUsers = true;
       this.formError = "";
       try {
-        const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+        const res = await fetch(`${this.apiBase}/admin.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "users" }),
@@ -332,7 +333,7 @@ export default {
 
       console.log("📤 Creating user:", payload);
 
-      const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+      const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -389,7 +390,7 @@ export default {
         payload.password = this.editingUser.password;
       }
 
-      const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+      const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -409,7 +410,7 @@ export default {
       if (!id) return;
       if (!confirm(`Ta bort ${user.username}?`)) return;
 
-      const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+      const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "delete_user", id }),

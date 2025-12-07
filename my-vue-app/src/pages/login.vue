@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { API_BASE } from "@/apiConfig";
+
 export default {
   name: "AdminLoginPage",
   data() {
@@ -38,7 +40,7 @@ export default {
       try {
         localStorage.clear();
 
-        const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+        const res = await fetch(`${API_BASE}/admin.php`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -46,6 +46,7 @@ import TrueFalseEditor from "@/components/exercises/editors/TrueFalseEditor.vue"
 import OrderingEditor from "@/components/exercises/editors/OrderingEditor.vue";
 import MatchEditor from "@/components/exercises/editors/MatchEditor.vue";
 import FillBlankEditor from "@/components/exercises/editors/FillBlankEditor.vue";
+import { API_BASE } from "@/apiConfig";
 
 export default {
   components: {
@@ -117,7 +118,7 @@ export default {
         },
       };
 
-      const res = await fetch("http://localhost/larportalen2025/api/create_exercise.php", {
+      const res = await fetch(`${API_BASE}/create_exercise.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
