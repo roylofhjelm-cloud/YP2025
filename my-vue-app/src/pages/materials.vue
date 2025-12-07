@@ -49,6 +49,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  name: "ReadingMaterialsPage",
   data() {
     return {
       materials: [],

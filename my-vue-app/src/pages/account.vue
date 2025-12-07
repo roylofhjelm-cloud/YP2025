@@ -33,6 +33,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  name: "AccountPage",
   data() {
     return { profile: null };
   },

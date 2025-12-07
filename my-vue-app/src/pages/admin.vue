@@ -411,7 +411,7 @@ export default {
       if (!confirm(`Ta bort ${user.username}?`)) return;
 
       const res = await fetch(`${this.apiBase}/admin.php`, {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "delete_user", id }),
       });

@@ -1,7 +1,20 @@
 <?php
 require_once "config.php";
 
-header("Access-Control-Allow-Origin: http://localhost:8080");
+// Allow local dev and live domain
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$allowedOrigins = [
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "https://yp2025.rf.gd",
+  "http://yp2025.rf.gd",
+];
+if (in_array($origin, $allowedOrigins, true)) {
+  header("Access-Control-Allow-Origin: $origin");
+} else {
+  header("Access-Control-Allow-Origin: https://yp2025.rf.gd");
+}
+
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
