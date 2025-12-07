@@ -601,7 +601,7 @@ export default {
 }
 .tabs {
   display: inline-flex;
-  background: #e5e7eb;
+  background: var(--surface-alt);
   border-radius: 999px;
   padding: 0.25rem;
   margin-bottom: 1.5rem;
@@ -615,8 +615,8 @@ export default {
   font-weight: 500;
 }
 .tab.active {
-  background: white;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
 }
 .content h2 {
   margin-bottom: 0.75rem;
@@ -632,10 +632,11 @@ export default {
   gap: 1.5rem;
 }
 .card {
-  background: white;
+  background: var(--surface);
   border-radius: 16px;
   padding: 1.25rem;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
 }
 .card-header {
   display: flex;
@@ -653,22 +654,24 @@ select {
   width: 100%;
   margin-top: 0.25rem;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   padding: 0.45rem 0.6rem;
   font-size: 0.9rem;
+  background: var(--surface-alt);
+  color: var(--text);
 }
 .btn {
   margin-top: 0.5rem;
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 0.75rem;
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: #fff;
   font-weight: 600;
   cursor: pointer;
 }
 .btn:hover {
-  background: #1d4ed8;
+  opacity: 0.92;
 }
 .user-list {
   list-style: none;
@@ -679,7 +682,7 @@ select {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 .user-actions {
   display: flex;
@@ -689,7 +692,7 @@ select {
 .text-btn {
   border: none;
   background: transparent;
-  color: #2563eb;
+  color: var(--primary);
   cursor: pointer;
   font-weight: 600;
 }
@@ -698,7 +701,7 @@ select {
 }
 .user-meta {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 .list {
   margin-top: 0.5rem;
@@ -708,13 +711,13 @@ select {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
 }
 .list-row:last-child {
   border-bottom: none;
 }
 .muted {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 .row-actions {
@@ -726,8 +729,8 @@ select {
   margin-left: 0.4rem;
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #4338ca;
+  background: var(--accent);
+  color: var(--primary-strong);
   font-size: 0.7rem;
 }
 .user-xp {
@@ -744,18 +747,18 @@ select {
 }
 .hint {
   margin-bottom: 1rem;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 .divider {
   height: 1px;
-  background: #e5e7eb;
+  background: var(--border);
   margin: 1rem 0;
 }
 .edit-panel {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
   display: grid;
   gap: 0.6rem;
 }
@@ -764,10 +767,10 @@ select {
   gap: 0.6rem;
 }
 .question-block {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.75rem;
-  background: #f8fafc;
+  background: var(--surface-alt);
   margin-bottom: 0.6rem;
 }
 .question-row {

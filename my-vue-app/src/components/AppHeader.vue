@@ -100,6 +100,7 @@ export default {
 
       if (this.session.isAdmin) {
         links.push({ to: "/admin", label: "Admin" });
+        links.push({ to: "/materials", label: "Materials" });
       }
 
       if (!this.session.isStudent && !this.session.isAdmin) {
