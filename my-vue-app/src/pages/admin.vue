@@ -201,6 +201,7 @@
               <p class="hint">Hantera artiklar.</p>
             </div>
             <button class="text-btn" @click="loadMaterials">↻ Uppdatera</button>
+            <router-link class="btn" to="/add-material">+ Lägg till</router-link>
           </div>
 
           <div class="list" v-if="loadingMaterials">Laddar läsmaterial...</div>

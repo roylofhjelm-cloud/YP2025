@@ -63,6 +63,18 @@ try {
     $stmt4->execute([$xp]);
     $level = $stmt4->fetch(PDO::FETCH_ASSOC);
 
+    // Next level threshold
+    $stmt5 = $pdo->prepare("
+        SELECT XP_Required
+        FROM experience_levels
+        WHERE XP_Required > ?
+        ORDER BY XP_Required ASC
+        LIMIT 1
+    ");
+    $stmt5->execute([$xp]);
+    $nextLevel = $stmt5->fetch(PDO::FETCH_ASSOC);
+    $next_xp = $nextLevel ? (int)$nextLevel["XP_Required"] : null;
+
     file_put_contents("debug_avg.txt", json_encode($stats, JSON_PRETTY_PRINT));
 
     echo json_encode([
@@ -76,6 +88,8 @@ try {
             "name" => $level["Level_Name"] ?? "1",
             "xp_required" => isset($level["XP_Required"]) ? (int)$level["XP_Required"] : 0,
         ],
+        "xp" => $xp,
+        "next_level_xp" => $next_xp,
     ]);
 } catch (Exception $e) {
     http_response_code(500);

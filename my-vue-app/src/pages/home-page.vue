@@ -4,8 +4,13 @@
       <div class="progress-top">
         <div>
           <p class="eyebrow">Din nivå</p>
-          <h2>Level {{ progress.level?.id || 1 }}</h2>
+          <h2>Level {{ levelNumber }}</h2>
           <p class="muted">XP: {{ userXp }}</p>
+          <div class="xp-bar">
+            <div class="fill" :style="{ width: xpPercent + '%' }"></div>
+          </div>
+          <small class="muted" v-if="progress.next_level_xp">Nästa nivå vid {{ progress.next_level_xp }} XP</small>
+          <small class="muted" v-else>Max nivå</small>
         </div>
         <div class="stat-card">
           <p>Övningar klara</p>
@@ -139,6 +144,17 @@ export default {
     }
   },
   methods: {
+    levelNumber() {
+      return this.progress?.level?.id || 1;
+    },
+    userXp() {
+      return this.progress?.xp ?? 0;
+    },
+    xpPercent() {
+      const next = this.progress?.next_level_xp;
+      if (!next) return 100;
+      return Math.min(100, Math.round((this.userXp() / next) * 100));
+    },
     formatType(type) {
       const map = {
         true_false: "Sant eller falskt",
@@ -227,6 +243,19 @@ export default {
 }
 .muted {
   color: var(--text-muted);
+}
+.xp-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 0.4rem 0 0.3rem;
+  overflow: hidden;
+}
+.xp-bar .fill {
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 999px;
 }
 .stat-card {
   background: var(--surface-alt);
