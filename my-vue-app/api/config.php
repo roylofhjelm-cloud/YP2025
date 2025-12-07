@@ -21,10 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$host = "localhost";
-$dbname = "learningportal";
-$username = "root";
-$password = "";
+$host = "sql100.infinityfree.com";
+$dbname = "if0_40620890_learningportal";
+$username = "if0_40620890";
+$password = "Enkulla12";
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
