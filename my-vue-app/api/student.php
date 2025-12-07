@@ -1,6 +1,6 @@
 <?php
 require_once "config.php";
-session_start();
+require_once "auth_helpers.php";
 
 // Allow local dev and live domain
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -49,13 +49,15 @@ if($input["action"] === "login"){
     session_regenerate_id(true);
     $_SESSION["user_id"] = $user["u_id"];
     $_SESSION["role"] = "student";
+    $csrf = issue_csrf();
     echo json_encode([
       "success"=>true,
       "user" => [
         "u_id" => $user["u_id"],
         "username" => $user["username"],
         "xp" => $user["xp"]
-      ]
+      ],
+      "csrf_token" => $csrf
     ]);
   } else {
     echo json_encode(["success"=>false]);

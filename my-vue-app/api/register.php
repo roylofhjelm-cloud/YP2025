@@ -1,5 +1,6 @@
 <?php
 require_once "config.php";
+require_once "auth_helpers.php";
 
 // Allow local dev and live domain
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -54,7 +55,16 @@ try {
     $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, 1)");
     $stmt->execute([$username, $email, $hashed]);
 
-    echo json_encode(["success" => true, "user_id" => $pdo->lastInsertId()]);
+    session_regenerate_id(true);
+    $_SESSION["user_id"] = $pdo->lastInsertId();
+    $_SESSION["role"] = "student";
+    $csrf = issue_csrf();
+
+    echo json_encode([
+        "success" => true,
+        "user_id" => $_SESSION["user_id"],
+        "csrf_token" => $csrf
+    ]);
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(["error" => "Kunde inte registrera användare"]);

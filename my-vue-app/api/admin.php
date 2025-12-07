@@ -1,6 +1,6 @@
 <?php
 require_once "config.php";
-session_start();
+require_once "auth_helpers.php";
 
 // Allow local dev and live domain
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -83,12 +83,14 @@ if ($action === "login") {
     session_regenerate_id(true);
     $_SESSION["user_id"] = $user["u_id"];
     $_SESSION["role"] = "admin";
+    $csrf = issue_csrf();
     echo json_encode([
       "success" => true,
       "user" => [
         "u_id" => $user["u_id"],
         "username" => $user["username"],
       ],
+      "csrf_token" => $csrf,
     ]);
   } else {
     echo json_encode(["success" => false]);
@@ -100,6 +102,12 @@ if ($action === "login") {
 
 /* ---------------- CREATE USER (YOUR ORIGINAL LOGIC) ------------------- */
 if ($action === "create_user") {
+  if (!verify_csrf($input)) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Bad CSRF"]);
+    exit;
+  }
+  require_role("admin");
 
   $username = $input["username"] ?? ($_GET["username"] ?? null);
   $password = $input["password"] ?? ($_GET["password"] ?? null);
@@ -150,6 +158,12 @@ if ($action === "create_user") {
 
 /* ---------------- UPDATE USER ------------------- */
 if ($action === "update_user") {
+  if (!verify_csrf($input)) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Bad CSRF"]);
+    exit;
+  }
+  require_role("admin");
   $id       = $input["id"] ?? ($input["u_id"] ?? ($_GET["id"] ?? null));
   $username = $input["username"] ?? ($_GET["username"] ?? null);
   $email    = isset($input["email"]) ? trim($input["email"]) : (isset($_GET["email"]) ? trim($_GET["email"]) : null);
@@ -202,6 +216,12 @@ if ($action === "update_user") {
 
 /* ---------------- DELETE USER ------------------- */
 if ($action === "delete_user") {
+  if (!verify_csrf($input)) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Bad CSRF"]);
+    exit;
+  }
+  require_role("admin");
   $id = $input["id"] ?? ($input["u_id"] ?? ($_GET["id"] ?? null));
   if (!$id) {
     echo json_encode(["success" => false, "message" => "Missing id"]);
