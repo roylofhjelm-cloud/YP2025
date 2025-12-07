@@ -13,17 +13,16 @@ if ($userId === 0) {
 }
 
 try {
-    // Aggregate stats using the latest definition
+    // Aggregate stats using completed flag
     $stmt = $pdo->prepare("
         SELECT 
-            COUNT(*) as total,
-            ROUND(AVG(CASE WHEN Score > 0 THEN Score END)) as average_score,
-            SUM(Score > 0) as attempts
+            SUM(CASE WHEN Completed = 1 THEN 1 ELSE 0 END) as total_completed,
+            ROUND(AVG(Score)) as average_score
         FROM user_results
         WHERE User_Id = ?
     ");
     $stmt->execute([$userId]);
-    $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ["total" => 0, "average_score" => 0, "attempts" => 0];
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: ["total_completed" => 0, "average_score" => 0];
 
     // Recent exercise results
     $stmt2 = $pdo->prepare("
@@ -55,7 +54,7 @@ try {
     $xp = isset($user["xp"]) ? (int) $user["xp"] : 0;
 
     $stmt4 = $pdo->prepare("
-        SELECT Level_Name
+        SELECT Level_Id, Level_Name, XP_Required
         FROM experience_levels
         WHERE XP_Required <= ?
         ORDER BY XP_Required DESC
@@ -67,9 +66,16 @@ try {
     file_put_contents("debug_avg.txt", json_encode($stats, JSON_PRETTY_PRINT));
 
     echo json_encode([
-        "stats" => $stats,
+        "stats" => [
+            "total" => (int)$stats["total_completed"],
+            "average_score" => (int)$stats["average_score"]
+        ],
         "results" => $results,
-        "level" => $level["Level_Name"] ?? "Beginner",
+        "level" => [
+            "id" => isset($level["Level_Id"]) ? (int)$level["Level_Id"] : 1,
+            "name" => $level["Level_Name"] ?? "1",
+            "xp_required" => isset($level["XP_Required"]) ? (int)$level["XP_Required"] : 0,
+        ],
     ]);
 } catch (Exception $e) {
     http_response_code(500);

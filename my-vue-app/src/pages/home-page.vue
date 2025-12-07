@@ -1,21 +1,41 @@
 <template>
   <div class="home">
     <div v-if="progress" class="profile-block">
-      <h2>📊 Your Progress</h2>
+      <div class="progress-top">
+        <div>
+          <p class="eyebrow">Din nivå</p>
+          <h2>Level {{ progress.level?.id || 1 }}</h2>
+          <p class="muted">XP: {{ userXp }}</p>
+        </div>
+        <div class="stat-card">
+          <p>Övningar klara</p>
+          <strong>{{ progress.stats.total }}</strong>
+        </div>
+        <div class="stat-card">
+          <p>Snittpoäng</p>
+          <strong>{{ Math.round(progress.stats.average_score || 0) }}%</strong>
+        </div>
+      </div>
 
-      <p><strong>Level:</strong> {{ progress.level }}</p>
-      <p><strong>Exercises completed:</strong> {{ progress.stats.total }}</p>
-      <p>
-        <strong>Average score:</strong>
-        {{ Math.round(progress.stats.average_score || 0) }}%
-      </p>
-
-      <h3>Recent Results</h3>
-      <ul>
-        <li v-for="r in progress.results" :key="r.Exercise_Id">
-          <strong>{{ r.Title }}</strong> – {{ calculatePercent(r) }}%
-        </li>
-      </ul>
+      <div class="recent">
+        <h3>Senaste resultat</h3>
+        <div v-if="progress.results && progress.results.length">
+          <div
+            v-for="r in progress.results"
+            :key="r.Result_Id || r.Exercise_Id"
+            class="recent-row"
+          >
+            <div>
+              <p class="title">{{ r.Title }}</p>
+              <small>{{ formatType(r.Type) || 'Övning' }}</small>
+            </div>
+            <div class="badge" :class="badgeClass(calculatePercent(r))">
+              {{ calculatePercent(r) }}%
+            </div>
+          </div>
+        </div>
+        <p v-else class="muted">Inga resultat ännu.</p>
+      </div>
     </div>
 
     <h1 class="page-title">Lärportalen</h1>
@@ -142,6 +162,11 @@ export default {
       }
       return Math.round(Number(result?.Score || 0));
     },
+    badgeClass(p) {
+      if (p >= 70) return "badge pass";
+      if (p >= 50) return "badge warn";
+      return "badge fail";
+    },
     buildStatus(percent) {
       if (percent >= 95) return { percent, stars: 3, failed: false };
       if (percent >= 80) return { percent, stars: 2, failed: false };
@@ -175,6 +200,84 @@ export default {
 .subtitle {
   color: var(--text-muted);
   margin-bottom: 2rem;
+}
+
+.profile-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+.progress-top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+  align-items: center;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0 0 0.35rem;
+}
+.muted {
+  color: var(--text-muted);
+}
+.stat-card {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+.stat-card p {
+  margin: 0;
+  color: var(--text-muted);
+}
+.stat-card strong {
+  font-size: 1.4rem;
+}
+.recent {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.recent h3 {
+  margin: 0 0 0.5rem;
+}
+.recent-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.recent-row:last-child {
+  border-bottom: none;
+}
+.recent-row .title {
+  margin: 0;
+  font-weight: 600;
+}
+.badge {
+  padding: 0.3rem 0.7rem;
+  border-radius: 10px;
+  font-weight: 700;
+  color: white;
+}
+.badge.pass {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+.badge.warn {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+.badge.fail {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 .loading,

@@ -205,7 +205,8 @@ export default {
           body: JSON.stringify({
             user_id,
             exercise_id,
-            score: this.score
+            score: this.score,
+            total: 100,
           }),
         })
           .then(res => res.json())

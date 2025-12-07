@@ -13,26 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (
-  !isset($data["user_id"]) ||
-  !isset($data["exercise_id"]) ||
-  !isset($data["score"]) ||
-  !isset($data["total"])
-) {
+if (!isset($data["user_id"]) || !isset($data["exercise_id"]) || !isset($data["score"])) {
   echo json_encode(["error" => "Missing values"]);
   exit;
 }
 
 $userId = (int)$data["user_id"];
 $exerciseId = (int)$data["exercise_id"];
-$score = isset($data["score"]) ? (int)$data["score"] : 0;
-$total = isset($data["total"]) ? (int)$data["total"] : 0;
+$score = isset($data["score"]) ? (float)$data["score"] : 0;
+$total = isset($data["total"]) ? (float)$data["total"] : 100; // default 100 if not provided
 
-if ($total > 0 && $score <= $total) {
-  $percent = ($score / $total) * 100;
-} else {
-  $percent = $score;
-}
+$percent = $total > 0 ? ($score / $total) * 100 : $score;
 
 $percentRounded = round($percent);
 $passed = $percentRounded >= 70 ? 1 : 0;
