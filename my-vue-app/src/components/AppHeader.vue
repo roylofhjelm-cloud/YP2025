@@ -6,6 +6,14 @@
       </router-link>
 
       <div class="header-meta">
+        <button
+          class="menu-toggle"
+          type="button"
+          @click="menuOpen = !menuOpen"
+        >
+          ☰
+        </button>
+
         <nav v-if="visibleLinks.length" class="nav-links">
           <router-link
             v-for="link in visibleLinks"
@@ -70,6 +78,7 @@ export default {
         name: null,
         role: null,
       },
+      menuOpen: false,
     };
   },
   created() {
@@ -84,6 +93,7 @@ export default {
   watch: {
     $route() {
       this.refreshSession();
+      this.menuOpen = false;
     },
   },
   computed: {
@@ -327,6 +337,16 @@ export default {
   background: var(--danger-soft);
 }
 
+.menu-toggle {
+  display: none;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
 @media (max-width: 640px) {
   .header-shell {
     flex-direction: column;
@@ -337,11 +357,17 @@ export default {
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
   }
 
   .nav-links {
     width: 100%;
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    display: none;
+  }
+  .nav-links.open {
+    display: flex;
   }
 
   .account-chip {
@@ -350,6 +376,12 @@ export default {
 
   .logout-btn {
     align-self: flex-start;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

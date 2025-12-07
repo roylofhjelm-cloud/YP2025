@@ -1,5 +1,6 @@
 <?php
 require_once "config.php";
+session_start();
 
 // Allow local dev and live domain
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -60,6 +61,11 @@ if ($action === "login") {
   $username = $input["username"] ?? "";
   $password = $input["password"] ?? "";
 
+  if (strlen($username) < 3 || strlen($password) < 3) {
+    echo json_encode(["success" => false, "message" => "Ogiltiga uppgifter"]);
+    exit;
+  }
+
   $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND role_id = 3");
   $stmt->execute([$username]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -74,6 +80,9 @@ if ($action === "login") {
   }
 
   if ($user && $validPassword) {
+    session_regenerate_id(true);
+    $_SESSION["user_id"] = $user["u_id"];
+    $_SESSION["role"] = "admin";
     echo json_encode([
       "success" => true,
       "user" => [

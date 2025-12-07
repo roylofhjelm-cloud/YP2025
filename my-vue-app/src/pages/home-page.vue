@@ -50,9 +50,24 @@
       Inga övningar tillgängliga just nu.
     </div>
 
+    <div v-else class="list-controls">
+      <label>
+        <input type="checkbox" v-model="hideCompleted" />
+        Dölj klara övningar
+      </label>
+      <label>
+        <input type="checkbox" v-model="sortAZ" />
+        Sortera A–Ö
+      </label>
+    </div>
+
+    <div v-if="filteredExercises.length === 0" class="no-data">
+      Inga övningar tillgängliga just nu.
+    </div>
+
     <div v-else class="exercise-grid">
       <router-link
-        v-for="exercise in exercises"
+        v-for="exercise in filteredExercises"
         :key="exercise.Exercise_Id"
         :to="`/exercise/${exercise.Exercise_Id}`"
         class="exercise-card"
@@ -95,6 +110,8 @@ export default {
       user: null,
       progress: null,
       exercises: [],
+      hideCompleted: true,
+      sortAZ: true,
     };
   },
   computed: {
@@ -122,6 +139,19 @@ export default {
       });
 
       return map;
+    },
+    filteredExercises() {
+      let list = [...this.exercises];
+
+      if (this.hideCompleted) {
+        list = list.filter((ex) => !this.exerciseStatus[ex.Exercise_Id]);
+      }
+
+      if (this.sortAZ) {
+        list.sort((a, b) => (a.Title || "").localeCompare(b.Title || ""));
+      }
+
+      return list;
     },
   },
   async mounted() {
@@ -315,6 +345,19 @@ export default {
   text-align: center;
   margin-top: 4rem;
   font-style: italic;
+}
+.list-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+.list-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
 }
 
 .exercise-grid {

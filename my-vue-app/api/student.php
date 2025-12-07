@@ -1,5 +1,6 @@
 <?php
 require_once "config.php";
+session_start();
 
 // Allow local dev and live domain
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -38,13 +39,16 @@ if($input["action"] === "login"){
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
   $validPassword = false;
-  if ($user) {
+  if ($user && strlen($input["password"] ?? "") >= 3) {
     $validPassword =
       $input["password"] === ($user["password"] ?? "") ||
       password_verify($input["password"], $user["password"] ?? "");
   }
 
   if($user && $validPassword){
+    session_regenerate_id(true);
+    $_SESSION["user_id"] = $user["u_id"];
+    $_SESSION["role"] = "student";
     echo json_encode([
       "success"=>true,
       "user" => [
