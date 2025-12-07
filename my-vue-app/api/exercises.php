@@ -15,6 +15,18 @@ try {
 
     if ($method === 'POST') {
         $input = json_decode(file_get_contents("php://input"), true) ?? [];
+        // allow explicit delete via action for hosts that block DELETE
+        if (($input["action"] ?? "") === "delete") {
+            $id = isset($input["Exercise_Id"]) ? intval($input["Exercise_Id"]) : 0;
+            if ($id <= 0) {
+                echo json_encode(["success" => false, "error" => "Missing Exercise_Id"]);
+                exit;
+            }
+            $stmt = $pdo->prepare("DELETE FROM exercises WHERE Exercise_Id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(["success" => true, "deleted" => true]);
+            exit;
+        }
         $id = isset($input["Exercise_Id"]) ? intval($input["Exercise_Id"]) : 0;
         $title = $input["Title"] ?? null;
         $description = $input["Description"] ?? null;

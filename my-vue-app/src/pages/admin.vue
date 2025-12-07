@@ -523,9 +523,9 @@ export default {
     async deleteExercise(ex) {
       if (!confirm(`Ta bort övning "${ex.Title || ex.Exercise_Id}"?`)) return;
       const res = await fetch(`${this.apiBase}/exercises.php`, {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Exercise_Id: ex.Exercise_Id }),
+        body: JSON.stringify({ action: "delete", Exercise_Id: ex.Exercise_Id }),
       });
       const data = await res.json();
       if (data.success) {
@@ -575,9 +575,9 @@ export default {
     async deleteMaterial(m) {
       if (!confirm(`Ta bort material "${m.Title}"?`)) return;
       const res = await fetch(`${this.apiBase}/materials.php`, {
-        method: "DELETE",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ Material_Id: m.Material_Id }),
+        body: JSON.stringify({ action: "delete", Material_Id: m.Material_Id }),
       });
       const data = await res.json();
       if (data.success) {

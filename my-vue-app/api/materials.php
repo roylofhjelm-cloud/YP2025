@@ -34,6 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  if (($input["action"] ?? "") === "delete") {
+    $id = $input["Material_Id"] ?? ($input["id"] ?? null);
+    if (!$id) {
+      echo json_encode(["error" => "Missing id"]);
+      exit;
+    }
+    $stmt = $pdo->prepare("DELETE FROM materials WHERE Material_Id = ?");
+    $stmt->execute([$id]);
+    echo json_encode(["success" => true, "deleted" => true]);
+    exit;
+  }
   if (!isset($input['Title']) || !isset($input['Content'])) {
     echo json_encode(["error" => "Missing fields"]);
     exit;
