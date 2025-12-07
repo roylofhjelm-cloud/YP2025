@@ -164,6 +164,29 @@
               <button class="btn" @click="saveExerciseEdit">Spara</button>
               <button class="btn secondary" type="button" @click="cancelExerciseEdit">Avbryt</button>
             </div>
+
+            <h4>Frågor</h4>
+            <div
+              v-for="(q, idx) in editExerciseQuestions"
+              :key="idx"
+              class="question-block"
+            >
+              <div class="question-row">
+                <select v-model="q.type">
+                  <option value="mcq">Flerval</option>
+                  <option value="true_false">Sant/Falskt</option>
+                  <option value="ordering">Ordning</option>
+                  <option value="match">Para ihop</option>
+                  <option value="fill_blank">Textluckor</option>
+                </select>
+                <button class="text-btn danger" type="button" @click="removeEditQuestion(idx)">🗑️</button>
+              </div>
+              <component
+                :is="getEditor(q.type)"
+                v-model="editExerciseQuestions[idx].data"
+              />
+            </div>
+            <button class="btn secondary" type="button" @click="addEditQuestion">+ Lägg till fråga</button>
           </div>
 
           <div class="divider"></div>
@@ -216,10 +239,15 @@
 
 <script>
 import AddExercise from "./add-exercise.vue";
+import MCQEditor from "@/components/exercises/editors/MCQEditor.vue";
+import TrueFalseEditor from "@/components/exercises/editors/TrueFalseEditor.vue";
+import OrderingEditor from "@/components/exercises/editors/OrderingEditor.vue";
+import MatchEditor from "@/components/exercises/editors/MatchEditor.vue";
+import FillBlankEditor from "@/components/exercises/editors/FillBlankEditor.vue";
 
 export default {
   name: "AdminPage",
-  components: { AddExercise },
+  components: { AddExercise, MCQEditor, TrueFalseEditor, OrderingEditor, MatchEditor, FillBlankEditor },
 
   data() {
     return {
@@ -241,6 +269,7 @@ export default {
       loadingMaterials: false,
       editExercise: null,
       editMaterial: null,
+      editExerciseQuestions: [],
       apiBase: "http://localhost/larportalen2025/api",
     };
   },
@@ -393,6 +422,41 @@ export default {
       }
     },
 
+    getEditor(type) {
+      return {
+        mcq: "MCQEditor",
+        true_false: "TrueFalseEditor",
+        ordering: "OrderingEditor",
+        match: "MatchEditor",
+        fill_blank: "FillBlankEditor",
+      }[type] || "div";
+    },
+
+    normalizeType(t) {
+      const map = {
+        mcq: "mcq",
+        true_false: "true_false",
+        ordering: "ordering",
+        match: "match",
+        fill_blank: "fill_blank",
+        "true-false": "true_false",
+        trueFalse: "true_false",
+        order: "ordering",
+        "fill-blanks": "fill_blank",
+        fillBlank: "fill_blank",
+        "match-pairs": "match",
+        pairs: "match",
+      };
+      return map[t] ?? "mcq";
+    },
+
+    addEditQuestion() {
+      this.editExerciseQuestions.push({ type: "mcq", data: {} });
+    },
+    removeEditQuestion(idx) {
+      this.editExerciseQuestions.splice(idx, 1);
+    },
+
     async loadExercises() {
       this.loadingExercises = true;
       try {
@@ -406,11 +470,26 @@ export default {
       }
     },
 
-    startEditExercise(ex) {
-      this.editExercise = { ...ex };
+    async startEditExercise(ex) {
+      this.editExercise = null;
+      this.editExerciseQuestions = [];
+      try {
+        const res = await fetch(`${this.apiBase}/exercise.php?id=${ex.Exercise_Id}`);
+        const data = await res.json();
+        if (data.exercise) {
+          this.editExercise = { ...data.exercise };
+          this.editExerciseQuestions = (data.questions || []).map((q) => ({
+            type: this.normalizeType(q.Question_Type || q.type || q.Data?.type),
+            data: q.Data?.data || q.Data || q.data || {},
+          }));
+        }
+      } catch (err) {
+        console.error("Error loading exercise", err);
+      }
     },
     cancelExerciseEdit() {
       this.editExercise = null;
+      this.editExerciseQuestions = [];
     },
     async saveExerciseEdit() {
       if (!this.editExercise?.Exercise_Id) return;
@@ -422,11 +501,18 @@ export default {
           Title: this.editExercise.Title,
           Description: this.editExercise.Description,
           Type: this.editExercise.Type,
+          Data: {
+            questions: this.editExerciseQuestions.map((q) => ({
+              type: this.normalizeType(q.type),
+              data: q.data,
+            })),
+          },
         }),
       });
       const data = await res.json();
       if (data.success) {
         this.editExercise = null;
+        this.editExerciseQuestions = [];
         this.loadExercises();
       } else {
         alert("❌ Kunde inte spara övning");
@@ -676,6 +762,20 @@ select {
 .edit-actions {
   display: flex;
   gap: 0.6rem;
+}
+.question-block {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #f8fafc;
+  margin-bottom: 0.6rem;
+}
+.question-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 @media (max-width: 800px) {
   .grid {

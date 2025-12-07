@@ -199,7 +199,7 @@ export default {
 
       // 2️⃣ Save score + XP using your endpoint
       if (user_id) {
-        await fetch("http://localhost/larportalen2025/api/save_results.php", {
+        await fetch("http://localhost/larportalen2025/api/save_result.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

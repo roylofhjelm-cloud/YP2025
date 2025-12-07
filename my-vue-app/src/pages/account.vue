@@ -6,7 +6,7 @@
       <p><strong>Role:</strong> Student</p>
       <p><strong>XP:</strong> {{ profile.user.xp }}</p>
 
-      <p><strong>Level:</strong> {{ profile.level.level_name }}</p>
+      <p><strong>Level:</strong> {{ levelNumber }}</p>
 
       <div class="xp-bar">
         <div class="fill" :style="{ width: xpPercent + '%' }"></div>
@@ -35,6 +35,9 @@ export default {
     return { profile: null };
   },
   computed: {
+    levelNumber() {
+      return this.profile?.level?.level_id ?? 1;
+    },
     xpPercent() {
       if (!this.profile.next_level_xp) return 100;
       const xp = this.profile.user.xp;

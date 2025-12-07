@@ -1,6 +1,6 @@
 <template>
   <div class="add-exercise">
-    <h1>Skapa ny övning</h1>
+    <h3>Skapa ny övning</h3>
 
     <form @submit.prevent="save">
       <div class="form-group">
@@ -13,7 +13,7 @@
         <textarea v-model="description"></textarea>
       </div>
 
-      <h2>Frågor</h2>
+      <h4>Frågor</h4>
 
       <div v-for="(q, i) in questions" :key="i" class="question-block">
         <select v-model="q.type">
@@ -33,7 +33,7 @@
         <button @click="removeQuestion(i)" type="button">🗑️ Ta bort</button>
       </div>
 
-      <button type="button" @click="addQuestion">+ Lägg till fråga</button>
+      <button type="button" class="btn-secondary" @click="addQuestion">+ Lägg till fråga</button>
 
       <button type="submit" class="save">💾 Spara övning</button>
     </form>
@@ -130,3 +130,78 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.add-exercise {
+  margin: 0;
+  background: transparent;
+  padding: 0;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: var(--surface-alt);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.question-block {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: var(--surface);
+  display: grid;
+  gap: 0.5rem;
+}
+
+button {
+  font-family: inherit;
+}
+
+.btn-secondary {
+  align-self: flex-start;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-alt);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.save {
+  align-self: flex-start;
+  padding: 0.85rem 1.3rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary-gradient);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
+}
+
+.save:hover {
+  opacity: 0.95;
+}
+</style>

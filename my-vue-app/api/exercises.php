@@ -19,6 +19,9 @@ try {
         $title = $input["Title"] ?? null;
         $description = $input["Description"] ?? null;
         $type = $input["Type"] ?? null;
+        $questions = isset($input["Data"]["questions"]) && is_array($input["Data"]["questions"])
+            ? $input["Data"]["questions"]
+            : [];
 
         if ($id <= 0) {
             echo json_encode(["success" => false, "error" => "Missing Exercise_Id"]);
@@ -31,15 +34,35 @@ try {
         if ($description !== null) { $fields[] = "Description = ?"; $values[] = $description; }
         if ($type !== null) { $fields[] = "Type = ?"; $values[] = $type; }
 
-        if (!$fields) {
-            echo json_encode(["success" => false, "error" => "Nothing to update"]);
-            exit;
+        if ($fields) {
+            $values[] = $id;
+            $sql = "UPDATE exercises SET " . implode(", ", $fields) . " WHERE Exercise_Id = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($values);
         }
 
-        $values[] = $id;
-        $sql = "UPDATE exercises SET " . implode(", ", $fields) . " WHERE Exercise_Id = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($values);
+        // Replace questions if provided
+        if (!empty($questions)) {
+            $pdo->prepare("DELETE FROM exercise_questions WHERE Exercise_Id = ?")->execute([$id]);
+
+            $qStmt = $pdo->prepare("
+                INSERT INTO exercise_questions (Exercise_Id, Statement, Question_Type, Data)
+                VALUES (?, ?, ?, ?)
+            ");
+
+            foreach ($questions as $q) {
+                $qType = $q["type"] ?? ($q["Question_Type"] ?? "mcq");
+                $qData = $q["data"] ?? ($q["Data"] ?? []);
+                $statement = $qData["text"] ?? ($q["Statement"] ?? "Fråga");
+
+                $json = json_encode([
+                    "type" => $qType,
+                    "data" => $qData
+                ], JSON_UNESCAPED_UNICODE);
+
+                $qStmt->execute([$id, $statement, $qType, $json]);
+            }
+        }
 
         echo json_encode(["success" => true]);
         exit;

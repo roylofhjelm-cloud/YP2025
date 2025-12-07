@@ -101,7 +101,8 @@ export default {
 
     try {
       const ex = await fetch("http://localhost/larportalen2025/api/exercises.php");
-      this.exercises = await ex.json();
+      const data = await ex.json();
+      this.exercises = Array.isArray(data) ? data : data.exercises || [];
     } catch (err) {
       console.error("Error fetching exercises:", err);
       this.exercises = [];
