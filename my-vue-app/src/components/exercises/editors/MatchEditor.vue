@@ -16,10 +16,10 @@
         @input="updatePair(i, 'right', $event.target.value)"
         placeholder="Höger"
       />
-      <button @click="removePair(i)">🗑️</button>
+      <button type="button" @click="removePair(i)">🗑️</button>
     </div>
 
-    <button @click="addPair">+ Lägg till par</button>
+    <button type="button" @click="addPair">+ Lägg till par</button>
   </div>
 </template>
 

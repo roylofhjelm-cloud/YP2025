@@ -15,10 +15,10 @@
         :checked="opt.isCorrect"
         @change="updateOption(i,'isCorrect',$event.target.checked)"
       />
-      <button @click="removeOption(i)">🗑️</button>
+      <button type="button" @click="removeOption(i)">🗑️</button>
     </div>
 
-    <button @click="addOption">+ Lägg till alternativ</button>
+    <button type="button" @click="addOption">+ Lägg till alternativ</button>
   </div>
 </template>
 

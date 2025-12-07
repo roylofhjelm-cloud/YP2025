@@ -10,10 +10,10 @@
         :value="item"
         @input="updateItem(i, $event.target.value)"
       />
-      <button @click="removeItem(i)">🗑️</button>
+      <button type="button" @click="removeItem(i)">🗑️</button>
     </div>
 
-    <button @click="addItem">+ Lägg till</button>
+    <button type="button" @click="addItem">+ Lägg till</button>
   </div>
 </template>
 

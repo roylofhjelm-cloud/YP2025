@@ -13,10 +13,10 @@
         :value="ans"
         @input="updateAnswer(i, $event.target.value)"
       />
-      <button @click="removeAnswer(i)">🗑️</button>
+      <button type="button" @click="removeAnswer(i)">🗑️</button>
     </div>
 
-    <button @click="addAnswer">+ Lägg till svar</button>
+    <button type="button" @click="addAnswer">+ Lägg till svar</button>
   </div>
 </template>
 
