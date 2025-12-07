@@ -98,6 +98,17 @@ export default {
     };
   },
   computed: {
+    levelNumber() {
+      return this.progress?.level?.id || 1;
+    },
+    userXp() {
+      return this.progress?.xp ?? 0;
+    },
+    xpPercent() {
+      const next = this.progress?.next_level_xp;
+      if (!next) return 100;
+      return Math.min(100, Math.round((this.userXp / next) * 100));
+    },
     exerciseStatus() {
       if (!this.progress || !Array.isArray(this.progress.results)) return {};
 
@@ -144,17 +155,6 @@ export default {
     }
   },
   methods: {
-    levelNumber() {
-      return this.progress?.level?.id || 1;
-    },
-    userXp() {
-      return this.progress?.xp ?? 0;
-    },
-    xpPercent() {
-      const next = this.progress?.next_level_xp;
-      if (!next) return 100;
-      return Math.min(100, Math.round((this.userXp() / next) * 100));
-    },
     formatType(type) {
       const map = {
         true_false: "Sant eller falskt",
