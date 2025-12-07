@@ -283,12 +283,16 @@ export default {
   },
 
   methods: {
+    csrfToken() {
+      return localStorage.getItem("csrf_token") || "";
+    },
     async loadUsers() {
       this.loadingUsers = true;
       this.formError = "";
       try {
         const res = await fetch(`${this.apiBase}/admin.php`, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "users" }),
         });
@@ -323,6 +327,7 @@ export default {
         username: this.newUser.username,
         email: this.newUser.email || null,
         password: this.newUser.password,
+        csrf_token: this.csrfToken(),
         role: (() => {
           const map = { student: 1, teacher: 2, admin: 3 };
           const r = this.newUser.role;
@@ -336,6 +341,7 @@ export default {
 
       const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -379,6 +385,7 @@ export default {
         id: this.editingUser.id,
         username: this.editingUser.username,
         email: this.editingUser.email,
+        csrf_token: this.csrfToken(),
         role: (() => {
           const map = { student: 1, teacher: 2, admin: 3 };
           const r = this.editingUser.role;
@@ -393,6 +400,7 @@ export default {
 
       const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -413,8 +421,9 @@ export default {
 
       const res = await fetch(`${this.apiBase}/admin.php`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete_user", id }),
+        body: JSON.stringify({ action: "delete_user", id, csrf_token: this.csrfToken() }),
       });
       const data = await res.json();
       if (data.success || data.deleted) {
@@ -462,7 +471,7 @@ export default {
     async loadExercises() {
       this.loadingExercises = true;
       try {
-        const res = await fetch(`${this.apiBase}/exercises.php`);
+        const res = await fetch(`${this.apiBase}/exercises.php`, { credentials: "include" });
         const data = await res.json();
         this.exercises = data.exercises || [];
       } catch (err) {
@@ -497,12 +506,14 @@ export default {
       if (!this.editExercise?.Exercise_Id) return;
       const res = await fetch(`${this.apiBase}/exercises.php`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken() },
         body: JSON.stringify({
           Exercise_Id: this.editExercise.Exercise_Id,
           Title: this.editExercise.Title,
           Description: this.editExercise.Description,
           Type: this.editExercise.Type,
+          csrf_token: this.csrfToken(),
           Data: {
             questions: this.editExerciseQuestions.map((q) => ({
               type: this.normalizeType(q.type),
@@ -524,8 +535,9 @@ export default {
       if (!confirm(`Ta bort övning "${ex.Title || ex.Exercise_Id}"?`)) return;
       const res = await fetch(`${this.apiBase}/exercises.php`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", Exercise_Id: ex.Exercise_Id }),
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken() },
+        body: JSON.stringify({ action: "delete", Exercise_Id: ex.Exercise_Id, csrf_token: this.csrfToken() }),
       });
       const data = await res.json();
       if (data.success) {
@@ -538,7 +550,7 @@ export default {
     async loadMaterials() {
       this.loadingMaterials = true;
       try {
-        const res = await fetch(`${this.apiBase}/materials.php`);
+        const res = await fetch(`${this.apiBase}/materials.php`, { credentials: "include" });
         const data = await res.json();
         this.materials = Array.isArray(data) ? data : data.materials || [];
       } catch (err) {
@@ -557,11 +569,13 @@ export default {
       if (!this.editMaterial?.Material_Id) return;
       const res = await fetch(`${this.apiBase}/materials.php`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken() },
         body: JSON.stringify({
           Material_Id: this.editMaterial.Material_Id,
           Title: this.editMaterial.Title,
           Content: this.editMaterial.Content,
+          csrf_token: this.csrfToken(),
         }),
       });
       const data = await res.json();
@@ -576,8 +590,9 @@ export default {
       if (!confirm(`Ta bort material "${m.Title}"?`)) return;
       const res = await fetch(`${this.apiBase}/materials.php`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "delete", Material_Id: m.Material_Id }),
+        credentials: "include",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": this.csrfToken() },
+        body: JSON.stringify({ action: "delete", Material_Id: m.Material_Id, csrf_token: this.csrfToken() }),
       });
       const data = await res.json();
       if (data.success) {

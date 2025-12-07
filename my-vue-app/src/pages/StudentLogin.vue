@@ -71,6 +71,7 @@ export default {
 
         const res = await fetch(`${API_BASE}/student.php`, {
           method:"POST",
+          credentials: "include",
           headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({
             action:"login",
@@ -84,6 +85,7 @@ export default {
         if(data.success){
           localStorage.setItem("student_id", data.user.u_id)
           localStorage.setItem("student_name", data.user.username || "Student")
+          if (data.csrf_token) localStorage.setItem("csrf_token", data.csrf_token);
           this.$router.push("/home")
         } else {
           this.error = "Wrong student login"
@@ -112,6 +114,7 @@ export default {
       try {
         const res = await fetch(`${API_BASE}/register.php`, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: this.username,
@@ -123,6 +126,7 @@ export default {
         if (data.success) {
           localStorage.setItem("student_id", data.user_id);
           localStorage.setItem("student_name", this.username || "Student");
+          if (data.csrf_token) localStorage.setItem("csrf_token", data.csrf_token);
           this.$router.push("/home");
         } else {
           this.error = data.error || "Kunde inte registrera.";

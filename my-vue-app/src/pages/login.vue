@@ -42,6 +42,7 @@ export default {
 
         const res = await fetch(`${API_BASE}/admin.php`, {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "login",
@@ -57,6 +58,7 @@ export default {
           const adminName = data.user?.username || "Admin";
           localStorage.setItem("admin_id", adminId);
           localStorage.setItem("admin_name", adminName);
+          if (data.csrf_token) localStorage.setItem("csrf_token", data.csrf_token);
           this.$router.push("/admin");
         } else {
           this.error = "Wrong admin login";
