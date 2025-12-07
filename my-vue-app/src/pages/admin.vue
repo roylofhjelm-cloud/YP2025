@@ -130,12 +130,19 @@ export default {
       this.loadingUsers = true;
       this.formError = "";
       try {
-        const res = await fetch(`${this.apiBase}/admin.php?action=users`);
+        const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "users" }),
+        });
+
         const data = await res.json();
-        if (Array.isArray(data)) {
-          this.users = data;
-        } else if (data.error) {
-          this.formError = data.error;
+        console.log("👥 Loaded users:", data);
+
+        if (data.success) {
+          this.users = data.users;
+        } else {
+          alert("Kunde inte hämta användare");
         }
       } catch (err) {
         console.error("Error loading users", err);
@@ -148,37 +155,47 @@ export default {
     async createUser() {
       this.formError = "";
       this.formSuccess = "";
-      try {
-        const payload = {
-          action: "createUser",
-          username: this.newUser.username,
-          email: this.newUser.email,
-          password: this.newUser.password,
-          role: this.newUser.role,
-        };
 
-        const res = await fetch(`${this.apiBase}/admin.php`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      if (!this.newUser.username || !this.newUser.password) {
+        alert("Användarnamn och lösenord krävs");
+        return;
+      }
 
-        const data = await res.json();
-        if (!data.success) {
-          throw new Error(data.error || "Okänt fel");
-        }
+      const payload = {
+        action: "create_user",
+        username: this.newUser.username,
+        email: this.newUser.email || null,
+        password: this.newUser.password,
+        role: (() => {
+          const map = { student: 1, teacher: 2, admin: 3 };
+          const r = this.newUser.role;
+          if (typeof r === "string" && map[r]) return map[r];
+          const num = Number(r);
+          return [1, 2, 3].includes(num) ? num : 1;
+        })(), // default student
+      };
 
-        this.formSuccess = "Användare skapad!";
-        this.newUser.username = "";
-        this.newUser.email = "";
-        this.newUser.password = "";
-        this.newUser.role = "student";
+      console.log("📤 Creating user:", payload);
 
-        // reload list
+      const res = await fetch("http://localhost/larportalen2025/api/admin.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      console.log("📥 Result:", data);
+
+      if (data.success) {
+        alert("✔️ Användare skapad!");
+
+        // Reload user list automatically
         this.loadUsers();
-      } catch (err) {
-        console.error("Error creating user", err);
-        this.formError = err.message || "Kunde inte skapa användare.";
+
+        // Clear form
+        this.newUser = { username: "", email: "", password: "", role: "student" };
+      } else {
+        alert("❌ " + (data.message || "Fel vid skapande"));
       }
     },
   },

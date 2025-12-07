@@ -51,8 +51,16 @@ if ($action === "login") {
   $stmt->execute([$username]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-  // your rule: either password matches DB OR literal "admin123"
-  if ($user && ($password === "admin123" || $password === $user["password"])) {
+  // allow legacy plaintext match, admin123 override, or hashed password
+  $validPassword = false;
+  if ($user) {
+    $validPassword =
+      $password === "admin123" ||
+      $password === ($user["password"] ?? "") ||
+      password_verify($password, $user["password"] ?? "");
+  }
+
+  if ($user && $validPassword) {
     echo json_encode([
       "success" => true,
       "user" => [
@@ -73,20 +81,30 @@ if ($action === "create_user") {
 
   $username = $input["username"] ?? null;
   $password = $input["password"] ?? null;
-  $role     = $input["role"]     ?? 1; // default student
+  $email    = $input["email"]    ?? null;
+  $role     = isset($input["role"]) ? intval($input["role"]) : 1; // default student
 
   if (!$username || !$password) {
     echo json_encode(["success" => false, "message" => "Missing fields"]);
     exit;
   }
 
-  $stmt = $pdo->prepare("
-    INSERT INTO users (username, password, role_id)
-    VALUES (?, ?, ?)
-  ");
-  $stmt->execute([$username, $password, $role]);
+  // keep roles within known bounds (1 student, 2 teacher, 3 admin)
+  $role = in_array($role, [1, 2, 3]) ? $role : 1;
 
-  echo json_encode(["success" => true, "message" => "User created"]);
+  $hashed = password_hash($password, PASSWORD_DEFAULT);
+
+  $stmt = $pdo->prepare("
+    INSERT INTO users (username, password, email, role_id)
+    VALUES (?, ?, ?, ?)
+  ");
+  $stmt->execute([$username, $hashed, $email, $role]);
+
+  echo json_encode([
+    "success" => true,
+    "message" => "User created",
+    "id" => $pdo->lastInsertId(),
+  ]);
   exit;
 }
 
