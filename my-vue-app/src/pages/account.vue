@@ -68,22 +68,23 @@ export default {
   text-align: left;
 }
 .card {
-  background: #fff;
+  background: var(--surface);
   padding: 1.5rem 2rem;
   margin-bottom: 1rem;
   border-radius: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
 }
 .xp-bar {
   width: 100%;
   height: 12px;
   border-radius: 8px;
-  background: #eee;
+  background: var(--border);
   margin-top: 8px;
 }
 .fill {
   height: 100%;
-  background: #34d399;
+  background: var(--primary-gradient);
   border-radius: 8px;
 }
 .stats p {
@@ -91,14 +92,14 @@ export default {
 }
 .btn {
   padding: 0.85rem 1.5rem;
-  background: #2563eb;
-  color: white;
+  background: var(--primary);
+  color: #fff;
   border-radius: 12px;
   border: none;
   cursor: pointer;
 }
 .loading {
   text-align: center;
-  color: #777;
+  color: var(--text-muted);
 }
 </style>

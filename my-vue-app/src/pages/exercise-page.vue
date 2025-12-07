@@ -304,7 +304,7 @@ export default {
   position: relative;
 }
 .score-card {
-  background: #fff;
+  background: var(--surface);
   padding: 2rem;
   border-radius: 16px;
   text-align: center;
