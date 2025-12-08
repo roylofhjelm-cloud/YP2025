@@ -49,6 +49,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Account page: shows profile XP/level and basic stats for the logged-in user.
   name: "AccountPage",
   data() {
     return { profile: null };
