@@ -776,6 +776,9 @@ select {
 }
 .list {
   margin-top: 0.5rem;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 0.25rem;
 }
 .list-row {
   display: flex;
