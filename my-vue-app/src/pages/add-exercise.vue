@@ -61,6 +61,7 @@ import FillBlankEditor from "@/components/exercises/editors/FillBlankEditor.vue"
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Add-exercise page: admin builds a mixed exercise with multiple question types.
   components: {
     MCQEditor,
     TrueFalseEditor,
@@ -79,15 +80,18 @@ export default {
   },
 
   methods: {
+    // Add a new blank question using the default type
     addQuestion() {
       this.questions.push({
         type: "mcq",
         data: {},
       });
     },
+    // Remove a question by index
     removeQuestion(i) {
       this.questions.splice(i, 1);
     },
+    // Map editor components to the selected type
     getEditor(type) {
       return {
         mcq: "MCQEditor",
@@ -98,6 +102,7 @@ export default {
       }[type];
     },
 
+    // Normalize variations of question types before saving
     normalizeType(t) {
       const map = {
         mcq: "mcq",

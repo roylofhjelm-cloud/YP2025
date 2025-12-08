@@ -28,6 +28,7 @@
 
 <script>
 export default {
+  // Student MCQ renderer: radio options, tracks selected, emits correctness + chosen index.
   props: ["data", "modelValue", "disabled"],
   data() {
     return {

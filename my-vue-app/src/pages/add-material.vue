@@ -19,6 +19,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Add-material page: admin form to create new reading materials.
   name: "AddMaterial",
   data() {
     return {
@@ -31,15 +32,20 @@ export default {
     async save() {
       this.message = "";
       try {
+        const token = localStorage.getItem("csrf_token");
         const payload = {
           Title: this.title,
           Content: this.content,
-          Created_By: localStorage.getItem("admin_id") || null,
+          csrf_token: token,
         };
 
         const res = await fetch(`${API_BASE}/materials.php`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token || "",
+          },
           body: JSON.stringify(payload),
         });
 

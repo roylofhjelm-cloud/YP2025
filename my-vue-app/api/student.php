@@ -1,22 +1,15 @@
 <?php
+// Student API: handles student login and saving quiz results with XP updates.
 require_once "config.php";
 require_once "auth_helpers.php";
 
-// Allow local dev and live domain
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = [
+allow_cors([
   "http://localhost:8080",
   "http://127.0.0.1:8080",
   "https://yp2025.rf.gd",
   "http://yp2025.rf.gd",
-];
-if (in_array($origin, $allowedOrigins, true)) {
-  header("Access-Control-Allow-Origin: $origin");
-} else {
-  header("Access-Control-Allow-Origin: https://yp2025.rf.gd");
-}
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+]);
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Content-Type: application/json; charset=UTF-8");
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -37,6 +30,11 @@ if($input["action"] === "login"){
   $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND role_id = 1");
   $stmt->execute([$input["username"]]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  if (strlen($input["username"] ?? "") < 3 || strlen($input["password"] ?? "") < 3) {
+    echo json_encode(["success"=>false, "message"=>"Ogiltiga uppgifter"]);
+    exit;
+  }
 
   $validPassword = false;
   if ($user && strlen($input["password"] ?? "") >= 3) {
@@ -69,10 +67,26 @@ if($input["action"] === "login"){
 
 /* ------------ SAVE RESULT ------------ */
 if($input["action"] === "save_result"){
+  if (!verify_csrf($input)) {
+    http_response_code(400);
+    echo json_encode(["success"=>false, "error"=>"Bad CSRF"]);
+    exit;
+  }
+  require_logged_in(["student"]);
 
-  $userId = $input["user_id"];
-  $exerciseId = $input["exercise_id"];
-  $score = $input["score"];
+  $userId = (int)$input["user_id"];
+  $exerciseId = (int)$input["exercise_id"];
+  $score = (float)$input["score"];
+
+  if ($userId <= 0 || $exerciseId <= 0) {
+    echo json_encode(["success"=>false, "error"=>"Missing fields"]);
+    exit;
+  }
+  if ($userId !== ($_SESSION["user_id"] ?? 0)) {
+    http_response_code(403);
+    echo json_encode(["success"=>false, "error"=>"Forbidden"]);
+    exit;
+  }
 
   $stmt = $pdo->prepare("
     INSERT INTO user_results (User_Id, Exercise_Id, Score, Completed)
@@ -81,11 +95,12 @@ if($input["action"] === "save_result"){
 
   $stmt->execute([$userId, $exerciseId, $score]);
 
-  // Give XP (10 per correct)
-  $earnedXP = $score * 10;
+  $earnedXP = max(0, min(100, round($score))) >= 70 ? max(20, min(80, ($score - 60) * 2)) : 0;
 
-  $pdo->prepare("UPDATE users SET xp = xp + ? WHERE u_id = ?")
-      ->execute([$earnedXP,$userId]);
+  if ($earnedXP > 0) {
+    $pdo->prepare("UPDATE users SET xp = xp + ? WHERE u_id = ?")
+        ->execute([$earnedXP,$userId]);
+  }
 
   echo json_encode(["success"=>true, "xp_awarded"=>$earnedXP]);
   exit;

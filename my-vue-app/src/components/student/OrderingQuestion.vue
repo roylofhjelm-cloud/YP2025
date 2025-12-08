@@ -37,6 +37,7 @@
 
 <script>
 export default {
+  // Student ordering: reorder items with up/down controls, emits correct flag + order.
   name: "OrderingQuestion",
   props: ["data", "modelValue", "disabled"],
   emits: ["update:modelValue"],

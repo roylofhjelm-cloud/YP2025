@@ -250,6 +250,7 @@ import FillBlankEditor from "@/components/exercises/editors/FillBlankEditor.vue"
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Admin panel: manage users, exercises, and materials with inline editors.
   name: "AdminPage",
   components: { AddExercise, MCQEditor, TrueFalseEditor, OrderingEditor, MatchEditor, FillBlankEditor },
 

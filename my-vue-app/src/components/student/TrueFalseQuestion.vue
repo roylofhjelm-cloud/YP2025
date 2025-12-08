@@ -31,6 +31,7 @@
 
 <script>
 export default {
+  // Student true/false renderer: radio buttons with correctness feedback.
   props: ["data", "modelValue", "disabled"],
   data() {
     return {

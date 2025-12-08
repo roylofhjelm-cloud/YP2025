@@ -1,9 +1,16 @@
 <?php
+// Create exercise endpoint: admin-only, accepts mixed question payload and stores exercise + questions.
 require_once "config.php";
+require_once "auth_helpers.php";
 
-header("Access-Control-Allow-Origin: http://localhost:8080");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+allow_cors([
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "https://yp2025.rf.gd",
+  "http://yp2025.rf.gd",
+]);
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json; charset=UTF-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -11,60 +18,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$input = json_decode(file_get_contents("php://input"), true);
+$input = json_decode(file_get_contents("php://input"), true) ?? [];
 
-// Create debug file to inspect payload
-file_put_contents("debug_input.txt", json_encode($input, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+if (!verify_csrf($input)) {
+    http_response_code(400);
+    echo json_encode(["error" => "Bad CSRF"]);
+    exit;
+}
+require_role("admin");
 
-if (!$input || !isset($input["Title"]) || !isset($input["Type"])) {
+$title = trim($input["Title"] ?? "");
+$description = trim($input["Description"] ?? "");
+$type = trim($input["Type"] ?? "mixed"); // default mixed
+$created_by = $_SESSION["user_id"] ?? null;
+
+$questions = isset($input["Data"]["questions"]) && is_array($input["Data"]["questions"])
+    ? $input["Data"]["questions"]
+    : [];
+
+if (strlen($title) < 1 || strlen($type) < 2) {
     http_response_code(400);
     echo json_encode(["error" => "Missing required fields"]);
     exit;
 }
 
-$title = $input["Title"];
-$description = $input["Description"] ?? "";
-$type = $input["Type"]; // "mixed"
-$created_by = $input["Created_By"] ?? 1;
-
-// questions are inside Data.questions
-$questions = isset($input["Data"]["questions"]) && is_array($input["Data"]["questions"])
-    ? $input["Data"]["questions"]
-    : [];
-
 try {
-    // 1️⃣ Insert exercise
     $stmt = $pdo->prepare("
         INSERT INTO exercises (Title, Description, Type, Created_By)
         VALUES (?, ?, ?, ?)
     ");
-    $stmt->execute([$title, $description, $type, $created_by]);
+    $stmt->execute([
+        strip_tags(mb_substr($title, 0, 255)),
+        strip_tags(mb_substr($description, 0, 1000)),
+        strip_tags($type),
+        $created_by
+    ]);
     $exerciseId = $pdo->lastInsertId();
 
-    // 2️⃣ Insert each question
     if (!empty($questions)) {
-
         $qStmt = $pdo->prepare("
             INSERT INTO exercise_questions (Exercise_Id, Statement, Question_Type, Data)
             VALUES (?, ?, ?, ?)
         ");
 
         foreach ($questions as $q) {
-
-            // New format:  { type: "...", data: {...} }
-            $qType = $q["type"] ?? "mcq";
+            $qType = strip_tags($q["type"] ?? "mcq");
             $qData = $q["data"] ?? [];
-
-            // Always extract a visible statement
             $statement = $qData["text"] ?? "Fråga";
 
-            // Save JSON (type + data)
             $json = json_encode([
                 "type" => $qType,
                 "data" => $qData
             ], JSON_UNESCAPED_UNICODE);
 
-            $qStmt->execute([$exerciseId, $statement, $qType, $json]);
+            $qStmt->execute([$exerciseId, strip_tags(mb_substr($statement, 0, 500)), $qType, $json]);
         }
     }
 

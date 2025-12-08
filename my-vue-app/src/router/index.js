@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+// App router: defines all routes and guards for student/admin access.
 
 // Pages
 import HomePage from "../pages/home-page.vue";

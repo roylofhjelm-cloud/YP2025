@@ -134,6 +134,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Student home/dashboard: shows XP/level, recent results, exercise list with filters.
   name: "HomePage",
   data() {
     return {

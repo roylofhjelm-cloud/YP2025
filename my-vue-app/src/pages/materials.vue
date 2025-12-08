@@ -49,6 +49,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Reading materials page: lists articles and shows modal with full content.
   name: "ReadingMaterialsPage",
   data() {
     return {
@@ -58,7 +59,7 @@ export default {
   },
 
   async mounted() {
-    const res = await fetch(`${API_BASE}/materials.php`);
+    const res = await fetch(`${API_BASE}/materials.php`, { credentials: "include" });
     this.materials = await res.json();
   },
   methods: {

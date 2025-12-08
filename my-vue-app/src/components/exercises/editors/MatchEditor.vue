@@ -25,6 +25,7 @@
 
 <script>
 export default {
+  // Admin match editor: define instruction text and left/right pairs.
   props: ["modelValue"],
   emits: ["update:modelValue"],
 

@@ -1,23 +1,16 @@
 <?php
+// Admin API: handles admin login plus CRUD for users, exercises, and materials (role-protected).
 require_once "config.php";
 require_once "auth_helpers.php";
 
 // Allow local dev and live domain
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = [
+allow_cors([
   "http://localhost:8080",
   "http://127.0.0.1:8080",
   "https://yp2025.rf.gd",
   "http://yp2025.rf.gd",
-];
-if (in_array($origin, $allowedOrigins, true)) {
-  header("Access-Control-Allow-Origin: $origin");
-} else {
-  header("Access-Control-Allow-Origin: https://yp2025.rf.gd");
-}
-
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+]);
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -246,6 +239,7 @@ if ($action === "delete_user") {
    - GET  ?action=users
 */
 if ($action === "users" || $action === "list_users") {
+  require_logged_in(["admin"]);
   try {
     $stmt = $pdo->query("
       SELECT u.u_id, u.username, u.email, u.xp, u.role_id, r.role_name

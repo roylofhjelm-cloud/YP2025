@@ -27,6 +27,7 @@
 
 <script>
 export default {
+  // Admin true/false editor: set question text and choose correct boolean answer.
   props: ["modelValue"],
   emits: ["update:modelValue"],
 

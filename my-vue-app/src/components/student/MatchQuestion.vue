@@ -34,6 +34,7 @@
 
 <script>
 export default {
+  // Student match pairs: choose right-side option per left term, track correctness, allow reset.
   name: "MatchQuestion",
   props: ["data", "modelValue", "disabled"],
   emits: ["update:modelValue"],

@@ -4,33 +4,42 @@
     <textarea
       :value="localData.text"
       @input="updateText($event.target.value)"
-      placeholder="Skriv texten och använd ____ där luckan ska vara"
+      placeholder="Skriv texten. Klicka ord som ska bli luckor."
     ></textarea>
 
-    <h4>Alternativ (vad eleven får välja på)</h4>
-    <p class="hint">Lägg till alla alternativ inklusive det korrekta. Kryssa i rätt svar.</p>
-    <div v-for="(opt, i) in localData.options" :key="'opt-'+i" class="row option-row">
+    <h4>Markera luckor</h4>
+    <p class="hint">Klicka orden som ska döljas. Flera är ok.</p>
+    <div class="chips">
+      <button
+        v-for="(word, idx) in wordList"
+        :key="idx + word"
+        type="button"
+        class="chip"
+        :class="{ active: selectedIndexes.includes(idx) }"
+        @click="toggleBlank(idx)"
+      >
+        <input type="checkbox" :checked="selectedIndexes.includes(idx)" readonly />
+        {{ word }}
+      </button>
+    </div>
+
+    <h4>Ordlista (bank)</h4>
+    <p class="hint">Lägg till alla ord som ska gå att dra till luckorna. Markerade ord läggs till automatiskt.</p>
+    <div v-for="(opt, i) in localData.words" :key="'word-'+i" class="row option-row">
       <input
-        :value="opt.text"
-        @input="updateOptionText(i, $event.target.value)"
-        placeholder="Alternativ"
+        :value="opt"
+        @input="updateWord(i, $event.target.value)"
+        placeholder="Ord"
       />
-      <label class="check">
-        <input
-          type="checkbox"
-          :checked="opt.isCorrect"
-          @change="updateOptionCorrect(i, $event.target.checked)"
-        />
-        Rätt
-      </label>
       <button type="button" @click="removeOption(i)">🗑️</button>
     </div>
-    <button type="button" @click="addOption">+ Lägg till alternativ</button>
+    <button type="button" @click="addOption">+ Lägg till ord</button>
   </div>
 </template>
 
 <script>
 export default {
+  // Admin textluckor editor: select blank words and build a word bank for drag/drop.
   props: ["modelValue"],
   emits: ["update:modelValue"],
 
@@ -38,15 +47,21 @@ export default {
     return {
       localData: {
         text: "",
+        blanks: [],
         answers: [],
-        options: [],
+        words: [],
       },
+      selectedIndexes: [],
       internalHash: "",
     };
   },
 
   computed: {
-    // no computed fields needed
+    wordList() {
+      const text = this.localData.text || "";
+      const matches = text.match(/\S+/g);
+      return matches ? matches : [];
+    },
   },
 
   watch: {
@@ -63,65 +78,78 @@ export default {
   },
 
   methods: {
-    normalizeOptions(raw) {
-      if (!Array.isArray(raw)) return [];
-      return raw.map((opt) => {
-        if (typeof opt === "string") {
-          return { text: opt, isCorrect: false };
-        }
-        return {
-          text: opt?.text ?? "",
-          isCorrect: Boolean(opt?.isCorrect),
-        };
-      });
-    },
     hydrateFromModel() {
       const d = this.modelValue || {};
       const next = {
         text: d.text ?? "",
+        blanks: this.normalizeBlanks(d.blanks),
         answers: Array.isArray(d.answers) ? d.answers : [],
-        options: this.normalizeOptions(d.options),
+        words: Array.isArray(d.words) ? d.words : [],
       };
+      if (!next.answers.length && next.blanks.length) {
+        next.answers = next.blanks.map((b) => b.word).filter(Boolean);
+      }
+      if (!next.words.length) {
+        next.words = this.normalizeOptionsToWords(d.options);
+      }
+      next.words = this.ensureWords(next.answers, next.words);
+      this.selectedIndexes = next.blanks
+        .map((b) => (typeof b.index === "number" ? b.index : null))
+        .filter((i) => i !== null);
       this.setData(next);
     },
     updateText(v) {
       this.setData({ ...this.localData, text: v });
     },
-    updateOptionText(i, v) {
-      const options = this.normalizeOptions(this.localData.options);
-      if (!options[i]) return;
-      options[i] = { ...options[i], text: v };
-      this.persistOptions(options);
+    toggleBlank(idx) {
+      const exists = this.selectedIndexes.includes(idx);
+      let nextIdx = exists
+        ? this.selectedIndexes.filter((i) => i !== idx)
+        : [...this.selectedIndexes, idx];
+      nextIdx = nextIdx.sort((a, b) => a - b);
+      const blanks = nextIdx.map((i) => ({ index: i, word: this.wordList[i] || "" }));
+      const answers = blanks.map((b) => b.word);
+      const words = this.ensureWords(answers, this.localData.words);
+      this.selectedIndexes = nextIdx;
+      this.setData({ ...this.localData, blanks, answers, words });
     },
     addOption() {
-      const options = this.normalizeOptions(this.localData.options);
-      options.push({ text: "", isCorrect: false });
-      this.persistOptions(options);
+      const words = [...this.localData.words, ""];
+      this.setData({ ...this.localData, words });
     },
     removeOption(i) {
-      const options = this.normalizeOptions(this.localData.options).filter((_, idx) => idx !== i);
-      this.persistOptions(options);
+      const words = this.localData.words.filter((_, idx) => idx !== i);
+      this.setData({ ...this.localData, words });
     },
-    updateOptionCorrect(i, checked) {
-      let options = this.normalizeOptions(this.localData.options);
-      options = options.map((opt, idx) => ({
-        ...opt,
-        isCorrect: idx === i ? checked : false,
-      }));
-      this.persistOptions(options);
+    updateWord(i, v) {
+      const words = [...this.localData.words];
+      words[i] = v;
+      this.setData({ ...this.localData, words });
     },
-    ensureSingleCorrect(options, answers) {
-      if (!options.length) return options;
-      const withCorrect = options.some((o) => o.isCorrect);
-      if (!withCorrect && answers?.length) {
-        const ans = answers[0];
-        return options.map((o) => ({ ...o, isCorrect: o.text === ans }));
-      }
-      return options;
+    ensureWords(answers, words) {
+      const list = Array.isArray(words) ? [...words] : [];
+      (answers || []).forEach((a) => {
+        if (a && !list.includes(a)) list.push(a);
+      });
+      return list;
     },
-    persistOptions(options) {
-      const answers = options.filter((o) => o.isCorrect).map((o) => o.text);
-      this.setData({ ...this.localData, options, answers });
+    normalizeBlanks(raw) {
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .map((b) => {
+          if (typeof b === "object" && b !== null) {
+            return {
+              index: typeof b.index === "number" ? b.index : null,
+              word: b.word || b.text || "",
+            };
+          }
+          return { index: null, word: b || "" };
+        })
+        .filter((b) => b.word);
+    },
+    normalizeOptionsToWords(opts) {
+      if (!Array.isArray(opts)) return [];
+      return opts.map((o) => (typeof o === "string" ? o : o?.text || "")).filter(Boolean);
     },
     setData(next) {
       const currentHash = this.internalHash;
@@ -136,16 +164,32 @@ export default {
 </script>
 
 <style scoped>
-.option-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+.chips {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: center;
 }
-.check {
+.chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.9rem;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  padding: 0.35rem 0.65rem;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.chip.active {
+  background: var(--accent);
+  border-color: var(--primary);
+}
+.chip input {
+  pointer-events: none;
+}
+.option-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
 }
 </style>

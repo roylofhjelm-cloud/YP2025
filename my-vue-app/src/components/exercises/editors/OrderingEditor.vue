@@ -19,6 +19,7 @@
 
 <script>
 export default {
+  // Admin ordering editor: set instruction and list of items in the correct order.
   props: ["modelValue"],
   emits: ["update:modelValue"],
 

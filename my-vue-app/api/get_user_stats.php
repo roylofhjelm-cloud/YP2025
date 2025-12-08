@@ -1,7 +1,17 @@
 <?php
+// User stats API: returns XP, level (with fallback to formula), and summary stats for a user.
 require_once "config.php";
+require_once "auth_helpers.php";
 
+allow_cors([
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "https://yp2025.rf.gd",
+    "http://yp2025.rf.gd",
+]);
 header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -15,8 +25,14 @@ if ($user_id <= 0) {
     exit();
 }
 
+require_logged_in(["student", "admin"]);
+if ($_SESSION["role"] === "student" && ($user_id !== ($_SESSION["user_id"] ?? 0))) {
+    http_response_code(403);
+    echo json_encode(["error" => "Forbidden"]);
+    exit();
+}
+
 try {
-    // Fetch user row
     $stmt = $pdo->prepare("SELECT u_id, username, xp FROM users WHERE u_id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,7 +42,7 @@ try {
         exit();
     }
 
-    // Determine level based on XP_Required thresholds
+    // Figure out current level (highest XP_Required <= user xp)
     $stmt = $pdo->prepare("
         SELECT Level_Id, Level_Name, XP_Required
         FROM experience_levels
@@ -37,14 +53,13 @@ try {
     $stmt->execute([$user["xp"]]);
     $level = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Fallback level if none found
     if (!$level) {
         $level = ["Level_Id" => 1, "Level_Name" => "1", "XP_Required" => 0];
     }
 
-    // Next level threshold
+    // Next level from table if available
     $stmt = $pdo->prepare("
-        SELECT XP_Required
+        SELECT Level_Id, XP_Required
         FROM experience_levels
         WHERE XP_Required > ?
         ORDER BY XP_Required ASC
@@ -52,9 +67,19 @@ try {
     ");
     $stmt->execute([$user["xp"]]);
     $nextLevel = $stmt->fetch(PDO::FETCH_ASSOC);
-    $next_xp = $nextLevel ? intval($nextLevel["XP_Required"]) : null;
 
-    // User stats
+    // If table runs out, extend virtually with a formula (triangular progression * 100)
+    $next_xp = null;
+    $next_level_id = null;
+    if ($nextLevel) {
+        $next_xp = intval($nextLevel["XP_Required"]);
+        $next_level_id = intval($nextLevel["Level_Id"]);
+    } else {
+        $currentId = intval($level["Level_Id"]);
+        $next_level_id = $currentId + 1;
+        $next_xp = intval((($next_level_id * ($next_level_id - 1)) / 2) * 100);
+    }
+
     $stmt = $pdo->prepare("
         SELECT COUNT(*) AS completed, AVG(Score) AS avg_score
         FROM user_results
@@ -74,7 +99,7 @@ try {
         ],
         "level" => [
             "level_id" => intval($level["Level_Id"]),
-            "level_name" => strval($level["Level_Id"]), // show as number
+            "level_name" => strval($level["Level_Id"]),
             "xp_required" => intval($level["XP_Required"]),
         ],
         "next_level_xp" => $next_xp,

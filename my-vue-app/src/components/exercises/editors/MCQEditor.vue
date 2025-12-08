@@ -24,6 +24,7 @@
 
 <script>
 export default {
+  // Admin MCQ editor: edit question text, options list, and mark correct option.
   props: ["modelValue"],
   emits: ["update:modelValue"],
 

@@ -78,6 +78,7 @@ import FillBlankQuestion from "@/components/student/FillBlankQuestion.vue";
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Exercise runner: loads a single exercise, renders questions, and evaluates score/XP.
   name: "ExercisePage",
   components: {
     MultipleChoiceQuestion,
