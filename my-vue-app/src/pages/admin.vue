@@ -784,6 +784,20 @@ select {
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--border);
 }
+.list-row strong {
+  display: block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list-row .muted {
+  display: block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .list-row:last-child {
   border-bottom: none;
 }

@@ -99,6 +99,7 @@ textarea {
   border-radius: 10px;
   font-size: 1rem;
   background: var(--surface-alt);
+  text-align: left;
 }
 
 textarea {
