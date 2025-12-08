@@ -201,6 +201,7 @@ select {
   font-size: 1rem;
   background: var(--surface-alt);
   text-align: left;
+  box-sizing: border-box;
 }
 
 textarea {

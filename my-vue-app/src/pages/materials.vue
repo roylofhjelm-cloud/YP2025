@@ -136,6 +136,7 @@ export default {
   flex-direction: column;
   gap: 0.75rem;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  word-break: break-word;
 }
 .card:hover {
   transform: translateY(-4px);

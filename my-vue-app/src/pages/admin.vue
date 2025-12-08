@@ -730,6 +730,7 @@ select {
   font-size: 0.9rem;
   background: var(--surface-alt);
   color: var(--text);
+  box-sizing: border-box;
 }
 .btn {
   margin-top: 0.5rem;
