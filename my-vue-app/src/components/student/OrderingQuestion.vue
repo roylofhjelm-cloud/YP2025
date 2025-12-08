@@ -39,13 +39,24 @@ export default {
   data() {
     return {
       // make a local copy so we can reorder without mutating props
-      localOrder: Array.isArray(this.data?.items)
-        ? [...this.data.items]
-        : [],
+      localOrder: this.shuffleItems(this.data?.items),
     };
   },
 
   watch: {
+    // when parent resets the answer, reshuffle to avoid showing the solved order
+    modelValue(val) {
+      if (!val || !val.userAnswer || val.userAnswer.length === 0) {
+        this.localOrder = this.shuffleItems(this.data?.items);
+      }
+    },
+    // keep in sync if question data itself changes
+    "data.items": {
+      deep: true,
+      handler(newItems) {
+        this.localOrder = this.shuffleItems(newItems);
+      },
+    },
     // whenever local order changes, recompute correctness
     localOrder: {
       deep: true,
@@ -61,6 +72,14 @@ export default {
   },
 
   methods: {
+    shuffleItems(items) {
+      const arr = Array.isArray(items) ? [...items] : [];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
     moveUp(i) {
       if (this.disabled || i === 0) return;
       const arr = [...this.localOrder];

@@ -55,9 +55,12 @@
         <input type="checkbox" v-model="hideCompleted" />
         Dölj klara övningar
       </label>
-      <label>
-        <input type="checkbox" v-model="sortAZ" />
-        Sortera A–Ö
+      <label class="sort-label">
+        Sortera
+        <select v-model="sortMode">
+          <option value="title">A–Ö</option>
+          <option value="type">Kategori</option>
+        </select>
       </label>
     </div>
 
@@ -111,7 +114,7 @@ export default {
       progress: null,
       exercises: [],
       hideCompleted: true,
-      sortAZ: true,
+      sortMode: "title",
     };
   },
   computed: {
@@ -132,10 +135,11 @@ export default {
       const map = {};
       this.progress.results.forEach((result) => {
         const id = result.Exercise_Id;
-        if (map[id]) return;
-
         const percent = this.calculatePercent(result);
-        map[id] = this.buildStatus(percent);
+        const existing = map[id];
+        if (!existing || percent > existing.percent) {
+          map[id] = this.buildStatus(percent);
+        }
       });
 
       return map;
@@ -144,10 +148,21 @@ export default {
       let list = [...this.exercises];
 
       if (this.hideCompleted) {
-        list = list.filter((ex) => !this.exerciseStatus[ex.Exercise_Id]);
+        list = list.filter((ex) => {
+          const status = this.exerciseStatus[ex.Exercise_Id];
+          return !(status && status.passed);
+        });
       }
 
-      if (this.sortAZ) {
+      if (this.sortMode === "type") {
+        list.sort((a, b) => {
+          const typeA = this.formatType(a.Type || "") || "";
+          const typeB = this.formatType(b.Type || "") || "";
+          const primary = typeA.localeCompare(typeB);
+          if (primary !== 0) return primary;
+          return (a.Title || "").localeCompare(b.Title || "");
+        });
+      } else {
         list.sort((a, b) => (a.Title || "").localeCompare(b.Title || ""));
       }
 
@@ -168,7 +183,7 @@ export default {
     }
 
     try {
-      const ex = await fetch(`${API_BASE}/exercises.php`);
+      const ex = await fetch(`${API_BASE}/exercises.php`, { credentials: "include" });
       const data = await ex.json();
       this.exercises = Array.isArray(data) ? data : data.exercises || [];
     } catch (err) {
@@ -177,7 +192,9 @@ export default {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/user_progress.php?user_id=${this.user.id}`);
+      const res = await fetch(`${API_BASE}/user_progress.php?user_id=${this.user.id}`, {
+        credentials: "include",
+      });
       this.progress = await res.json();
     } catch (err) {
       console.error("Error fetching progress:", err);
@@ -214,10 +231,10 @@ export default {
       return "badge fail";
     },
     buildStatus(percent) {
-      if (percent >= 95) return { percent, stars: 3, failed: false };
-      if (percent >= 80) return { percent, stars: 2, failed: false };
-      if (percent >= 60) return { percent, stars: 1, failed: false };
-      return { percent, stars: 0, failed: true };
+      if (percent >= 95) return { percent, stars: 3, failed: false, passed: true };
+      if (percent >= 85) return { percent, stars: 2, failed: false, passed: true };
+      if (percent >= 70) return { percent, stars: 1, failed: false, passed: true };
+      return { percent, stars: 0, failed: true, passed: false };
     },
     statusLabel(status) {
       if (!status) return "";
@@ -358,6 +375,12 @@ export default {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.95rem;
+}
+.list-controls .sort-label select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  background: var(--surface-alt);
 }
 
 .exercise-grid {

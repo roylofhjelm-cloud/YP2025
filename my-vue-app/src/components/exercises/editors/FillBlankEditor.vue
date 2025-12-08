@@ -17,6 +17,18 @@
     </div>
 
     <button type="button" @click="addAnswer">+ Lägg till svar</button>
+
+    <h4>Svarsalternativ (visas för elever)</h4>
+    <p class="hint">Lägg till de alternativ som ska gå att välja. Om du lämnar listan tom används de korrekta svaren.</p>
+    <div v-for="(opt,i) in data.options" :key="'opt-'+i" class="row">
+      <input
+        :value="opt"
+        @input="updateOption(i, $event.target.value)"
+        placeholder="Alternativ"
+      />
+      <button type="button" @click="removeOption(i)">🗑️</button>
+    </div>
+    <button type="button" @click="addOption">+ Lägg till alternativ</button>
   </div>
 </template>
 
@@ -32,6 +44,11 @@ export default {
         return {
           text: d.text ?? "",
           answers: Array.isArray(d.answers) ? d.answers : [""],
+          options: Array.isArray(d.options)
+            ? d.options
+            : Array.isArray(d.answers)
+              ? [...d.answers]
+              : [""],
         };
       },
       set(v) {
@@ -56,6 +73,20 @@ export default {
       this.data = {
         ...this.data,
         answers: this.data.answers.filter((_, idx) => idx !== i),
+      };
+    },
+    updateOption(i, v) {
+      const options = [...this.data.options];
+      options[i] = v;
+      this.data = { ...this.data, options };
+    },
+    addOption() {
+      this.data = { ...this.data, options: [...this.data.options, ""] };
+    },
+    removeOption(i) {
+      this.data = {
+        ...this.data,
+        options: this.data.options.filter((_, idx) => idx !== i),
       };
     },
   },

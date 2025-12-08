@@ -10,11 +10,15 @@
           class="menu-toggle"
           type="button"
           @click="menuOpen = !menuOpen"
+          :aria-expanded="menuOpen"
         >
           ☰
         </button>
 
-        <nav v-if="visibleLinks.length" class="nav-links">
+        <nav
+          v-if="visibleLinks.length"
+          :class="['nav-links', { open: menuOpen }]"
+        >
           <router-link
             v-for="link in visibleLinks"
             :key="link.to"

@@ -16,11 +16,11 @@
       >
         <option disabled value="">-- välj --</option>
         <option
-          v-for="(p, idx) in data.pairs"
+          v-for="(p, idx) in rightOptions"
           :key="idx"
-          :value="p.right"
+          :value="p"
         >
-          {{ p.right }}
+          {{ p }}
         </option>
       </select>
     </div>
@@ -38,10 +38,36 @@ export default {
       localMatches: Array.isArray(this.data?.pairs)
         ? this.data.pairs.map(() => "")
         : [],
+      rightOptions: this.shuffleRights(this.data?.pairs),
     };
   },
 
+  watch: {
+    modelValue(val) {
+      if (!val || !val.userAnswer) {
+        this.localMatches = Array.isArray(this.data?.pairs)
+          ? this.data.pairs.map(() => "")
+          : [];
+      }
+    },
+    "data.pairs": {
+      deep: true,
+      handler(pairs) {
+        this.rightOptions = this.shuffleRights(pairs);
+        this.localMatches = Array.isArray(pairs) ? pairs.map(() => "") : [];
+      },
+    },
+  },
+
   methods: {
+    shuffleRights(pairs) {
+      const arr = Array.isArray(pairs) ? pairs.map(p => p.right) : [];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
     emitAnswer() {
       const correctRights = (this.data?.pairs || []).map(p => p.right);
       const user = this.localMatches;

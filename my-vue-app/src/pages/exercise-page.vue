@@ -1,28 +1,34 @@
 <template>
   <div class="exercise-page" v-if="exercise">
     <h1>{{ exercise.Title }}</h1>
-    <p>{{ exercise.Description }}</p>
+    <div v-if="!hasStarted" class="intro">
+      <p class="description">{{ exercise.Description }}</p>
+      <button class="btn primary" type="button" @click="startExercise">🚀 Börja övningen</button>
+    </div>
+    <div v-if="hasStarted" ref="questionTop"></div>
 
-    <section
-      v-for="(question, i) in questions"
-      :key="question.Question_Id"
-      class="question-block"
-    >
-      <div class="question-header">
-        <span class="chip">Fråga {{ i + 1 }}</span>
-        <p class="question-type">{{ typeLabels[question.Question_Type] || question.Question_Type }}</p>
-      </div>
+    <section v-if="hasStarted">
+      <section
+        v-for="(question, i) in questions"
+        :key="question.Question_Id"
+        class="question-block"
+      >
+        <div class="question-header">
+          <span class="chip">Fråga {{ i + 1 }}</span>
+          <p class="question-type">{{ typeLabels[question.Question_Type] || question.Question_Type }}</p>
+        </div>
 
-      <component
-        :is="getComponent(question.Question_Type)"
-        :data="question.Data"
-        :model-value="answers[i]"
-        @update:model-value="updateAnswer(i, $event)"
-        :disabled="showResults"
-      />
+        <component
+          :is="getComponent(question.Question_Type)"
+          :data="question.Data"
+          :model-value="answers[i]"
+          @update:model-value="updateAnswer(i, $event)"
+          :disabled="showResults"
+        />
+      </section>
     </section>
 
-    <div class="actions">
+    <div v-if="hasStarted" class="actions">
       <button
         v-if="!showResults"
         @click="checkAnswers"
@@ -80,16 +86,17 @@ export default {
     MatchQuestion,
     FillBlankQuestion,
   },
-  data() {
-    return {
-      exercise: null,
-      questions: [],
-      answers: [],
-      score: 0,
-      animatedScore: 0,
-      xpGained: 0,
-      showResults: false,
-      typeLabels: {
+    data() {
+      return {
+        exercise: null,
+        questions: [],
+        answers: [],
+        hasStarted: false,
+        score: 0,
+        animatedScore: 0,
+        xpGained: 0,
+        showResults: false,
+        typeLabels: {
         mcq: "Flerval",
         true_false: "Sant/Falskt",
         ordering: "Ordning",
@@ -101,7 +108,9 @@ export default {
   async mounted() {
     const id = this.$route.params.id;
     try {
-      const res = await fetch(`${API_BASE}/exercise.php?id=${id}`);
+      const res = await fetch(`${API_BASE}/exercise.php?id=${id}`, {
+        credentials: "include",
+      });
       const data = await res.json();
 
       this.exercise = data.exercise;
@@ -116,6 +125,7 @@ export default {
       });
 
       this.answers = Array(this.questions.length).fill(null);
+      this.hasStarted = !(this.exercise?.Description && this.exercise.Description.length > 0);
 
     } catch (err) {
       console.error("Failed loading exercise", err);
@@ -198,14 +208,20 @@ export default {
 
       // 2️⃣ Save score + XP using your endpoint
       if (user_id) {
+        const token = localStorage.getItem("csrf_token");
         await fetch(`${API_BASE}/save_result.php`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token || "",
+          },
           body: JSON.stringify({
             user_id,
             exercise_id,
             score: this.score,
             total: 100,
+            csrf_token: token,
           }),
         })
           .then(res => res.json())
@@ -222,6 +238,15 @@ export default {
 
     fireConfetti() {
       this.triggerConfetti();
+    },
+
+    startExercise() {
+      this.hasStarted = true;
+      this.$nextTick(() => {
+        if (this.$refs.questionTop && this.$refs.questionTop.scrollIntoView) {
+          this.$refs.questionTop.scrollIntoView({ behavior: "smooth" });
+        }
+      });
     },
 
     resetQuiz() {
@@ -277,6 +302,21 @@ export default {
   gap: 0.75rem;
   justify-content: flex-end;
   margin-top: 1rem;
+}
+.intro {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-soft);
+}
+.intro .description {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+.btn.primary {
+  margin-top: 0.5rem;
 }
 .btn {
   background: var(--primary);

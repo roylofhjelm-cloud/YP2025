@@ -105,6 +105,15 @@ export default {
     },
 
     async save() {
+      if (!this.title.trim()) {
+        alert("Titel krävs");
+        return;
+      }
+      if (!this.questions.length) {
+        alert("Lägg till minst en fråga");
+        return;
+      }
+
       const payload = {
         Title: this.title,
         Description: this.description,
@@ -118,15 +127,28 @@ export default {
         },
       };
 
+      const token = localStorage.getItem("csrf_token");
       const res = await fetch(`${API_BASE}/create_exercise.php`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": token || "",
+        },
+        body: JSON.stringify({ ...payload, csrf_token: token }),
       });
 
       const out = await res.json();
       console.log(out);
-      alert("Saved!");
+      if (out.success) {
+        alert("Saved!");
+        this.title = "";
+        this.description = "";
+        this.questions = [];
+        this.addQuestion();
+      } else {
+        alert(out.message || "Kunde inte spara övning");
+      }
     },
   },
 };
