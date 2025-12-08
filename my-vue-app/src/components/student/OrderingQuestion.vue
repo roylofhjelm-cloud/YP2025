@@ -27,6 +27,11 @@
         </button>
       </div>
     </div>
+
+    <div v-if="disabled" class="result">
+      <span v-if="modelValue?.correct" class="correct">✔ Rätt</span>
+      <span v-else class="wrong">✖ Fel</span>
+    </div>
   </div>
 </template>
 
@@ -135,5 +140,15 @@ export default {
 }
 .order-controls button {
   margin-left: 0.15rem;
+}
+.result {
+  margin-top: 0.4rem;
+  font-weight: 700;
+}
+.correct {
+  color: #16a34a;
+}
+.wrong {
+  color: #dc2626;
 }
 </style>

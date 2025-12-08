@@ -1,27 +1,30 @@
 <template>
   <div>
-    <p class="q-text">{{ data.text }}</p>
+    <p class="q-text">{{ displayText }}</p>
 
-    <div
-      v-for="(ans,i) in userAnswers"
-      :key="i"
-      class="blank-row"
-    >
-      <select
-        v-model="userAnswers[i]"
-        @change="update"
-        :disabled="disabled"
+    <div v-if="optionPool.length">
+      <div
+        v-for="(ans,i) in userAnswers"
+        :key="i"
+        class="blank-row"
       >
-        <option disabled value="">-- välj ett alternativ --</option>
-        <option
-          v-for="opt in optionPool"
-          :key="opt + i"
-          :value="opt"
+        <select
+          v-model="userAnswers[i]"
+          @change="update"
+          :disabled="disabled"
         >
-          {{ opt }}
-        </option>
-      </select>
+          <option disabled value="">-- välj ett alternativ --</option>
+          <option
+            v-for="opt in optionPool"
+            :key="opt + i"
+            :value="opt"
+          >
+            {{ opt }}
+          </option>
+        </select>
+      </div>
     </div>
+    <p v-else class="warning">Inga svarsalternativ tillgängliga för denna fråga.</p>
 
     <div v-if="disabled" class="result">
       <span v-if="modelValue?.correct" class="correct">✔ Rätt</span>
@@ -38,38 +41,65 @@ export default {
     return {
       userAnswers: this.modelValue?.userAnswer
         ? [...this.modelValue.userAnswer]
-        : (Array.isArray(this.data?.answers) ? this.data.answers : []).map(() => ""),
+        : this.defaultBlanks(),
     };
   },
   computed: {
     optionPool() {
-      const opts = Array.isArray(this.data?.options) && this.data.options.length
-        ? this.data.options
-        : this.data?.answers || [];
-      return [...new Set(opts)];
+      const opts =
+        (Array.isArray(this.data?.options) && this.data.options.length
+          ? this.data.options
+          : this.initialAnswers()) || [];
+      const normalized = opts.map((o) => (typeof o === "string" ? o : o?.text || ""));
+      return [...new Set(normalized.filter(v => v !== ""))];
+    },
+    displayText() {
+      return this.data?.text || "";
+    },
+    blanksCount() {
+      const text = this.data?.text || "";
+      const placeholderCount = (text.match(/____/g) || []).length;
+      const answerCount = this.initialAnswers().length;
+      return Math.max(placeholderCount || answerCount || 1, 1);
     },
   },
 
   watch: {
     modelValue(val) {
       if (!val || !val.userAnswer) {
-        const answers = Array.isArray(this.data?.answers) ? this.data.answers : [];
-        this.userAnswers = answers.map(() => "");
+        this.userAnswers = this.defaultBlanks();
       }
     },
     "data.answers": {
       deep: true,
       handler(newAnswers) {
-        this.userAnswers = Array.isArray(newAnswers)
-          ? newAnswers.map(() => "")
-          : [];
+        this.userAnswers = this.defaultBlanks(newAnswers);
       },
     },
   },
   methods: {
+    initialAnswers(raw) {
+      const base = raw || this.data?.answers;
+      if (Array.isArray(base) && base.length) return base;
+      // fallback: derive from options with isCorrect
+      if (Array.isArray(this.data?.options)) {
+        const derived = this.data.options
+          .filter((o) => typeof o === "object" && o?.isCorrect)
+          .map((o) => o.text || "");
+        if (derived.length) return derived;
+      }
+      return [""];
+    },
+    defaultBlanks(raw) {
+      const answers = this.initialAnswers(raw);
+      const count = this.blanksCount || answers.length || 1;
+      return Array(count).fill("");
+    },
     update() {
-      const correct = Array.isArray(this.data?.answers) ? this.data.answers : [];
+      const correct = this.initialAnswers();
       const user = this.userAnswers.slice(0, correct.length);
+
+      if (!correct.length || !this.optionPool.length) return;
 
       const isCorrect = JSON.stringify(user) === JSON.stringify(correct);
 

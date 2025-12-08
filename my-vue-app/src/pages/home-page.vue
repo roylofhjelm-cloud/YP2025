@@ -24,9 +24,9 @@
 
       <div class="recent">
         <h3>Senaste resultat</h3>
-        <div v-if="progress.results && progress.results.length">
+        <div v-if="recentResults.length">
           <div
-            v-for="r in progress.results"
+            v-for="r in recentResults"
             :key="r.Result_Id || r.Exercise_Id"
             class="recent-row"
           >
@@ -51,10 +51,6 @@
     </div>
 
     <div v-else class="list-controls">
-      <label>
-        <input type="checkbox" v-model="hideCompleted" />
-        Dölj klara övningar
-      </label>
       <label class="sort-label">
         Sortera
         <select v-model="sortMode">
@@ -62,6 +58,37 @@
           <option value="type">Kategori</option>
         </select>
       </label>
+      <label class="sort-label">
+        Status
+        <select v-model="statusFilter">
+          <option value="all">Alla</option>
+          <option value="passed">Endast godkända</option>
+          <option value="failed">Endast underkända</option>
+          <option value="not-started">Ej påbörjade</option>
+        </select>
+      </label>
+      <label class="sort-label">
+        Kategori
+        <select v-model="categoryFilter">
+          <option value="all">Alla</option>
+          <option
+            v-for="cat in categoryOptions"
+            :key="cat"
+            :value="cat"
+          >
+            {{ formatType(cat) }}
+          </option>
+        </select>
+      </label>
+      <label class="sort-label search">
+        Sök
+        <input
+          v-model="searchTerm"
+          type="search"
+          placeholder="Sök titel/beskrivning"
+        />
+      </label>
+      <button type="button" class="text-btn reset" @click="resetFilters">Återställ</button>
     </div>
 
     <div v-if="filteredExercises.length === 0" class="no-data">
@@ -115,6 +142,9 @@ export default {
       exercises: [],
       hideCompleted: true,
       sortMode: "title",
+      statusFilter: "all",
+      categoryFilter: "all",
+      searchTerm: "",
     };
   },
   computed: {
@@ -144,20 +174,48 @@ export default {
 
       return map;
     },
+    recentResults() {
+      if (!this.progress?.results) return [];
+      return this.progress.results.slice(0, 5);
+    },
+    categoryOptions() {
+      const set = new Set();
+      this.exercises.forEach((ex) => {
+        const code = this.normalizeType(ex.Type);
+        if (code) set.add(code);
+      });
+      return Array.from(set).sort();
+    },
     filteredExercises() {
       let list = [...this.exercises];
 
-      if (this.hideCompleted) {
+      if (this.statusFilter === "passed") {
+        list = list.filter((ex) => this.exerciseStatus[ex.Exercise_Id]?.passed);
+      } else if (this.statusFilter === "failed") {
+        list = list.filter((ex) => this.exerciseStatus[ex.Exercise_Id]?.failed);
+      } else if (this.statusFilter === "not-started") {
+        list = list.filter((ex) => !this.exerciseStatus[ex.Exercise_Id]);
+      }
+
+      if (this.categoryFilter !== "all") {
+        list = list.filter(
+          (ex) => this.normalizeType(ex.Type) === this.categoryFilter
+        );
+      }
+
+      if (this.searchTerm.trim()) {
+        const term = this.searchTerm.trim().toLowerCase();
         list = list.filter((ex) => {
-          const status = this.exerciseStatus[ex.Exercise_Id];
-          return !(status && status.passed);
+          const title = (ex.Title || "").toLowerCase();
+          const desc = (ex.Description || "").toLowerCase();
+          return title.includes(term) || desc.includes(term);
         });
       }
 
       if (this.sortMode === "type") {
         list.sort((a, b) => {
-          const typeA = this.formatType(a.Type || "") || "";
-          const typeB = this.formatType(b.Type || "") || "";
+          const typeA = this.formatType(a.Type || this.normalizeType(a.Type) || "") || "";
+          const typeB = this.formatType(b.Type || this.normalizeType(b.Type) || "") || "";
           const primary = typeA.localeCompare(typeB);
           if (primary !== 0) return primary;
           return (a.Title || "").localeCompare(b.Title || "");
@@ -202,6 +260,17 @@ export default {
     }
   },
   methods: {
+    normalizeType(type) {
+      const map = {
+        true_false: "true_false",
+        mcq: "mcq",
+        ordering: "ordering",
+        match: "match",
+        fill_blank: "fill_blank",
+      };
+      const key = typeof type === "string" ? type : "";
+      return map[key] || key || "other";
+    },
     formatType(type) {
       const map = {
         true_false: "Sant eller falskt",
@@ -241,6 +310,12 @@ export default {
       if (status.failed) return "Failed";
       const starWord = status.stars === 1 ? "star" : "stars";
       return `${"⭐".repeat(status.stars)} ${status.stars} ${starWord}`;
+    },
+    resetFilters() {
+      this.sortMode = "title";
+      this.statusFilter = "all";
+      this.categoryFilter = "all";
+      this.searchTerm = "";
     },
   },
 };
@@ -365,22 +440,57 @@ export default {
 }
 .list-controls {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
   margin-bottom: 1rem;
   color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  box-shadow: var(--shadow-soft);
 }
 .list-controls label {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-size: 0.95rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
 }
 .list-controls .sort-label select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.35rem 0.55rem;
   background: var(--surface-alt);
+}
+.list-controls .sort-label.search input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  background: var(--surface-alt);
+}
+.list-controls .sort-label input[type="number"] {
+  width: 80px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  background: var(--surface-alt);
+}
+.list-controls .reset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.65rem;
+  background: var(--surface-alt);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+}
+.list-controls .reset:hover {
+  background: var(--accent);
 }
 
 .exercise-grid {

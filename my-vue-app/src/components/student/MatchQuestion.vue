@@ -24,6 +24,11 @@
         </option>
       </select>
     </div>
+
+    <div v-if="disabled" class="result">
+      <span v-if="modelValue?.correct" class="correct">✔ Rätt</span>
+      <span v-else class="wrong">✖ Fel</span>
+    </div>
   </div>
 </template>
 
@@ -43,12 +48,15 @@ export default {
   },
 
   watch: {
-    modelValue(val) {
-      if (!val || !val.userAnswer) {
-        this.localMatches = Array.isArray(this.data?.pairs)
-          ? this.data.pairs.map(() => "")
-          : [];
-      }
+    modelValue: {
+      deep: true,
+      handler(val) {
+        if (!val || !val.userAnswer) {
+          this.localMatches = Array.isArray(this.data?.pairs)
+            ? this.data.pairs.map(() => "")
+            : [];
+        }
+      },
     },
     "data.pairs": {
       deep: true,
@@ -98,5 +106,15 @@ export default {
 }
 .left {
   min-width: 120px;
+}
+.result {
+  margin-top: 0.4rem;
+  font-weight: 700;
+}
+.correct {
+  color: #16a34a;
+}
+.wrong {
+  color: #dc2626;
 }
 </style>

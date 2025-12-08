@@ -189,9 +189,11 @@
             <button class="btn secondary" type="button" @click="addEditQuestion">+ Lägg till fråga</button>
           </div>
 
-          <div class="divider"></div>
-          <h4>Skapa ny övning</h4>
-          <AddExercise />
+          <div v-if="!editExercise">
+            <div class="divider"></div>
+            <h4>Skapa ny övning</h4>
+            <AddExercise />
+          </div>
         </div>
 
         <div class="card">
@@ -485,7 +487,9 @@ export default {
       this.editExercise = null;
       this.editExerciseQuestions = [];
       try {
-        const res = await fetch(`${this.apiBase}/exercise.php?id=${ex.Exercise_Id}`);
+        const res = await fetch(`${this.apiBase}/exercise.php?id=${ex.Exercise_Id}`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if (data.exercise) {
           this.editExercise = { ...data.exercise };

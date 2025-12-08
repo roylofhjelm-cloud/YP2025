@@ -1,29 +1,45 @@
 <template>
   <div class="account-page" v-if="profile">
-    <h1>👤 {{ profile.user.username }}</h1>
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Din profil</p>
+        <h1>👤 {{ profile.user.username }}</h1>
+        <p class="muted">Student</p>
+      </div>
+      <button @click="goHome" class="btn ghost">⬅️ Tillbaka</button>
+    </header>
 
-    <div class="card">
-      <p><strong>Role:</strong> Student</p>
-      <p><strong>XP:</strong> {{ profile.user.xp }}</p>
+    <div class="grid">
+      <div class="card highlight">
+        <div class="level-row">
+          <div>
+            <p class="label">Level</p>
+            <h2>{{ levelNumber }}</h2>
+          </div>
+          <div class="pill">XP: {{ profile.user.xp }}</div>
+        </div>
 
-      <p><strong>Level:</strong> {{ levelNumber }}</p>
-
-      <div class="xp-bar">
-        <div class="fill" :style="{ width: xpPercent + '%' }"></div>
+        <div class="xp-bar">
+          <div class="fill" :style="{ width: xpPercent + '%' }"></div>
+        </div>
+        <small v-if="profile.next_level_xp" class="muted">
+          Nästa nivå vid {{ profile.next_level_xp }} XP
+        </small>
+        <small v-else class="muted">🥳 Max nivå uppnådd</small>
       </div>
 
-      <small v-if="profile.next_level_xp">
-        Next level at {{ profile.next_level_xp }} XP
-      </small>
-      <small v-else>🥳 Max level reached!</small>
+      <div class="card stats">
+        <h3>Dina siffror</h3>
+        <div class="stat-row">
+          <span>Klarmarkerade övningar</span>
+          <strong>{{ profile.stats.completed_exercises }}</strong>
+        </div>
+        <div class="stat-row">
+          <span>Snittpoäng</span>
+          <strong>{{ profile.stats.average_score }}%</strong>
+        </div>
+      </div>
     </div>
-
-    <div class="card stats">
-      <p><strong>Completed Exercises:</strong> {{ profile.stats.completed_exercises }}</p>
-      <p><strong>Average Score:</strong> {{ profile.stats.average_score }}%</p>
-    </div>
-
-    <button @click="goHome" class="btn">⬅️ Back</button>
   </div>
 
   <div v-else class="loading">Loading...</div>
@@ -50,7 +66,9 @@ export default {
   async mounted() {
     const uid = localStorage.getItem("student_id") || localStorage.getItem("admin_id");
     if (!uid) return;
-    const res = await fetch(`${API_BASE}/get_user_stats.php?user_id=${uid}`);
+    const res = await fetch(`${API_BASE}/get_user_stats.php?user_id=${uid}`, {
+      credentials: "include",
+    });
     this.profile = await res.json();
   },
   methods: {
@@ -65,7 +83,27 @@ export default {
 .account-page {
   max-width: 600px;
   margin: 2rem auto;
-  text-align: left;
+}
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 0 0 0.25rem;
+}
+.muted {
+  color: var(--text-muted);
+}
+.grid {
+  display: grid;
+  gap: 1rem;
 }
 .card {
   background: var(--surface);
@@ -74,6 +112,10 @@ export default {
   border-radius: 14px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
+}
+.card.highlight {
+  background: var(--surface-alt);
+  border-color: var(--border);
 }
 .xp-bar {
   width: 100%;
@@ -87,16 +129,52 @@ export default {
   background: var(--primary-gradient);
   border-radius: 8px;
 }
-.stats p {
-  margin: 0.25rem 0;
+.level-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.level-row .label {
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.pill {
+  background: var(--accent);
+  color: var(--primary-strong);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.stats h3 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+}
+.stat-row span {
+  color: var(--text-muted);
+}
+.stat-row strong {
+  font-size: 1.1rem;
 }
 .btn {
-  padding: 0.85rem 1.5rem;
+  padding: 0.75rem 1.35rem;
   background: var(--primary);
   color: #fff;
   border-radius: 12px;
   border: none;
   cursor: pointer;
+}
+.btn.ghost {
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 .loading {
   text-align: center;

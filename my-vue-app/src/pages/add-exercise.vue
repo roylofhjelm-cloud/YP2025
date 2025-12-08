@@ -13,6 +13,18 @@
         <textarea v-model="description"></textarea>
       </div>
 
+      <div class="form-group">
+        <label>Övningstyp</label>
+        <select v-model="exerciseType">
+          <option value="mixed">Blandad</option>
+          <option value="mcq">Flerval</option>
+          <option value="true_false">Sant/Falskt</option>
+          <option value="ordering">Ordning</option>
+          <option value="match">Para ihop</option>
+          <option value="fill_blank">Textluckor</option>
+        </select>
+      </div>
+
       <h4>Frågor</h4>
 
       <div v-for="(q, i) in questions" :key="i" class="question-block">
@@ -62,6 +74,7 @@ export default {
       title: "",
       description: "",
       questions: [],
+      exerciseType: "mixed",
     };
   },
 
@@ -117,7 +130,7 @@ export default {
       const payload = {
         Title: this.title,
         Description: this.description,
-        Type: "mixed",
+        Type: this.exerciseType || "mixed",
         Created_By: 1,
         Data: {
           questions: this.questions.map((q) => ({
