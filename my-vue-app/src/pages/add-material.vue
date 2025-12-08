@@ -1,5 +1,6 @@
 <template>
   <div class="add-material">
+    <button class="back-btn" type="button" @click="goBack">← Tillbaka</button>
     <h1>Lägg till läsmaterial</h1>
 
     <form @submit.prevent="save">
@@ -29,6 +30,13 @@ export default {
     };
   },
   methods: {
+    goBack() {
+      if (window.history.length > 1) {
+        this.$router.back();
+      } else {
+        this.$router.push("/admin");
+      }
+    },
     async save() {
       this.message = "";
       try {
@@ -121,5 +129,14 @@ textarea {
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
   border: 1px solid var(--success-text);
+}
+.back-btn {
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
 }
 </style>

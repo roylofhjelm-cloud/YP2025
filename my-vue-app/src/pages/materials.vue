@@ -7,9 +7,17 @@
       </div>
     </header>
 
+    <div class="filter-row">
+      <input
+        v-model="search"
+        type="search"
+        placeholder="Sök titel..."
+      />
+    </div>
+
     <div class="grid">
       <article
-        v-for="m in materials"
+        v-for="m in filteredMaterials"
         :key="m.Material_Id"
         class="card"
         @click="openMaterial(m)"
@@ -55,7 +63,17 @@ export default {
     return {
       materials: [],
       selected: null,
+      search: "",
     };
+  },
+  computed: {
+    filteredMaterials() {
+      if (!this.search.trim()) return this.materials;
+      const term = this.search.trim().toLowerCase();
+      return this.materials.filter((m) =>
+        (m.Title || "").toLowerCase().includes(term)
+      );
+    },
   },
 
   async mounted() {
@@ -85,6 +103,16 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+}
+.filter-row {
+  margin-bottom: 1rem;
+}
+.filter-row input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-alt);
 }
 .eyebrow {
   text-transform: uppercase;

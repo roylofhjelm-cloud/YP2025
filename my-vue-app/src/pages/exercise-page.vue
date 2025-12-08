@@ -1,6 +1,7 @@
 <template>
   <div class="exercise-page" v-if="exercise">
     <h1>{{ exercise.Title }}</h1>
+    <button class="back-btn" type="button" @click="goBack">← Tillbaka</button>
     <div v-if="!hasStarted" class="intro">
       <p class="description">{{ exercise.Description }}</p>
       <button class="btn primary" type="button" @click="startExercise">🚀 Börja övningen</button>
@@ -43,6 +44,7 @@
       >
         🔁 Försök igen
       </button>
+      <button class="btn secondary" type="button" @click="goBack">← Tillbaka</button>
     </div>
 
     <div v-if="showResults" class="result">
@@ -87,17 +89,17 @@ export default {
     MatchQuestion,
     FillBlankQuestion,
   },
-    data() {
-      return {
-        exercise: null,
-        questions: [],
-        answers: [],
-        hasStarted: false,
-        score: 0,
-        animatedScore: 0,
-        xpGained: 0,
-        showResults: false,
-        typeLabels: {
+  data() {
+    return {
+      exercise: null,
+      questions: [],
+      answers: [],
+      hasStarted: false,
+      score: 0,
+      animatedScore: 0,
+      xpGained: 0,
+      showResults: false,
+      typeLabels: {
         mcq: "Flerval",
         true_false: "Sant/Falskt",
         ordering: "Ordning",
@@ -241,6 +243,14 @@ export default {
       this.triggerConfetti();
     },
 
+    goBack() {
+      if (window.history.length > 1) {
+        this.$router.back();
+      } else {
+        this.$router.push("/home");
+      }
+    },
+
     startExercise() {
       this.hasStarted = true;
       this.$nextTick(() => {
@@ -332,6 +342,21 @@ export default {
 }
 .btn:hover {
   transform: translateY(-1px);
+}
+.btn.secondary {
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+.back-btn {
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
 }
 .loading {
   text-align: center;

@@ -127,9 +127,26 @@
             <button class="text-btn" @click="loadExercises">↻ Uppdatera</button>
           </div>
 
+          <div class="filter-row">
+            <input
+              v-model="exerciseSearch"
+              placeholder="Sök titel..."
+              class="filter-input"
+            />
+            <select v-model="exerciseTypeFilter" class="filter-input">
+              <option value="all">Alla typer</option>
+              <option value="mcq">mcq</option>
+              <option value="true_false">true_false</option>
+              <option value="match">match</option>
+              <option value="ordering">ordering</option>
+              <option value="fill_blank">fill_blank</option>
+              <option value="mixed">mixed</option>
+            </select>
+          </div>
+
           <div class="list" v-if="loadingExercises">Laddar övningar...</div>
           <div class="list" v-else>
-            <div v-for="ex in exercises" :key="ex.Exercise_Id" class="list-row">
+            <div v-for="ex in filteredExercises" :key="ex.Exercise_Id" class="list-row">
               <div>
                 <strong>{{ ex.Title || 'Namnlös' }}</strong>
                 <div class="muted">{{ ex.Type }}</div>
@@ -139,7 +156,7 @@
                 <button class="text-btn danger" @click="deleteExercise(ex)">Ta bort</button>
               </div>
             </div>
-            <p v-if="exercises.length === 0" class="muted">Inga övningar hittades.</p>
+            <p v-if="filteredExercises.length === 0" class="muted">Inga övningar hittades.</p>
           </div>
 
           <div v-if="editExercise" class="edit-panel">
@@ -206,9 +223,17 @@
             <router-link class="btn" to="/add-material">+ Lägg till</router-link>
           </div>
 
+          <div class="filter-row">
+            <input
+              v-model="materialSearch"
+              placeholder="Sök titel..."
+              class="filter-input"
+            />
+          </div>
+
           <div class="list" v-if="loadingMaterials">Laddar läsmaterial...</div>
           <div class="list" v-else>
-            <div v-for="m in materials" :key="m.Material_Id" class="list-row">
+            <div v-for="m in filteredMaterials" :key="m.Material_Id" class="list-row">
               <div>
                 <strong>{{ m.Title }}</strong>
                 <div class="muted">{{ m.Created_At }}</div>
@@ -218,7 +243,7 @@
                 <button class="text-btn danger" @click="deleteMaterial(m)">Ta bort</button>
               </div>
             </div>
-            <p v-if="materials.length === 0" class="muted">Inga läsmaterial hittades.</p>
+            <p v-if="filteredMaterials.length === 0" class="muted">Inga läsmaterial hittades.</p>
           </div>
 
           <div v-if="editMaterial" class="edit-panel">
@@ -276,6 +301,9 @@ export default {
       editMaterial: null,
       editExerciseQuestions: [],
       apiBase: API_BASE,
+      exerciseSearch: "",
+      exerciseTypeFilter: "all",
+      materialSearch: "",
     };
   },
 
@@ -607,6 +635,27 @@ export default {
       }
     },
   },
+  computed: {
+    filteredExercises() {
+      let list = [...this.exercises];
+      if (this.exerciseSearch.trim()) {
+        const term = this.exerciseSearch.trim().toLowerCase();
+        list = list.filter((ex) => (ex.Title || "").toLowerCase().includes(term));
+      }
+      if (this.exerciseTypeFilter !== "all") {
+        list = list.filter((ex) => (ex.Type || "").toLowerCase() === this.exerciseTypeFilter.toLowerCase());
+      }
+      return list;
+    },
+    filteredMaterials() {
+      let list = [...this.materials];
+      if (this.materialSearch.trim()) {
+        const term = this.materialSearch.trim().toLowerCase();
+        list = list.filter((m) => (m.Title || "").toLowerCase().includes(term));
+      }
+      return list;
+    },
+  },
 };
 </script>
 
@@ -745,6 +794,18 @@ select {
 .row-actions {
   display: flex;
   gap: 0.4rem;
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.filter-input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface-alt);
 }
 .badge {
   display: inline-block;

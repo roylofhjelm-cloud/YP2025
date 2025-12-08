@@ -200,6 +200,8 @@ select {
   border-radius: 10px;
   font-size: 1rem;
   background: var(--surface-alt);
+  text-align: center;
+  text-align-last: center;
 }
 
 textarea {
