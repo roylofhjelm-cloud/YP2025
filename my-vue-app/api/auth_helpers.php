@@ -22,10 +22,10 @@ header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style
 
 function allow_cors(array $allowedOrigins) {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if ($origin && (in_array($origin, $allowedOrigins, true) || true)) {
-        // reflect caller origin so credentials are allowed
+    if (in_array($origin, $allowedOrigins, true)) {
         header("Access-Control-Allow-Origin: $origin");
     } else {
+        // default to prod host
         header("Access-Control-Allow-Origin: https://yp2025.rf.gd");
     }
     header("Access-Control-Allow-Credentials: true");
