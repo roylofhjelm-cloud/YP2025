@@ -1,30 +1,25 @@
 <?php
-// config.php - database connection
+// config.php - database connection and permissive CORS for local/prod
 
-// Allow local dev and live domain
+// CORS: reflect origin when present so credentials pass
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowedOrigins = [
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
-    "https://yp2025.rf.gd",
-    "http://yp2025.rf.gd",
-];
-if (in_array($origin, $allowedOrigins, true)) {
+if ($origin) {
     header("Access-Control-Allow-Origin: $origin");
 } else {
     header("Access-Control-Allow-Origin: https://yp2025.rf.gd");
 }
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Credentials: true");
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-$host = "sql100.infinityfree.com";
-$dbname = "if0_40620890_learningportal";
-$username = "if0_40620890";
-$password = "Enkulla12";
+$host = "localhost";
+$dbname = "learningportal";
+$username = "root";
+$password = "";
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
