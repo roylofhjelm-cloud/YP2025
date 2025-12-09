@@ -30,6 +30,7 @@
     </form>
 
     <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="success" class="success">{{ success }}</p>
 
     <p class="toggle">
       <button type="button" @click="toggleMode">
@@ -50,6 +51,7 @@ export default {
       password:"",
       confirm:"",
       error:null,
+      success:null,
       mode: "login"
     }
   },
@@ -98,6 +100,7 @@ export default {
     },
     async register() {
       this.error = null;
+      this.success = null;
       if (!this.username || !this.password) {
         this.error = "Användarnamn och lösenord krävs";
         return;
@@ -124,10 +127,11 @@ export default {
         });
         const data = await res.json();
         if (data.success) {
-          localStorage.setItem("student_id", data.user_id);
-          localStorage.setItem("student_name", this.username || "Student");
-          if (data.csrf_token) localStorage.setItem("csrf_token", data.csrf_token);
-          this.$router.push("/home");
+          localStorage.clear();
+          this.mode = "login";
+          this.success = "Konto skapat! Logga in med dina uppgifter.";
+          this.password = "";
+          this.confirm = "";
         } else {
           this.error = data.error || "Kunde inte registrera.";
         }
@@ -165,6 +169,13 @@ button{
   border-radius:8px;
 }
 .error{color:var(--error-text);}
+.success{
+  color: var(--success-text);
+  background: var(--success-bg);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--success-text);
+}
 .toggle button{
   background: transparent;
   border: none;

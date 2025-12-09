@@ -62,11 +62,25 @@
         <div class="card">
           <h3>Befintliga användare</h3>
 
+          <div class="filter-row">
+            <input
+              v-model="userSearch"
+              placeholder="Sök användarnamn..."
+              class="filter-input"
+            />
+            <select v-model="userRoleFilter" class="filter-input">
+              <option value="all">Alla roller</option>
+              <option value="student">Student</option>
+              <option value="teacher">Lärare</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
           <p v-if="loadingUsers">Laddar användare...</p>
           <p v-else-if="users.length === 0">Inga användare hittades.</p>
 
           <ul v-else class="user-list">
-            <li v-for="u in users" :key="u.u_id" class="user-item">
+            <li v-for="u in filteredUsers" :key="u.u_id" class="user-item">
               <div>
                 <strong>{{ u.username }}</strong>
                 <div class="user-meta">
@@ -83,6 +97,9 @@
               </div>
             </li>
           </ul>
+          <p v-if="!loadingUsers && users.length > 0 && filteredUsers.length === 0" class="muted">
+            Inga användare matchar filtret.
+          </p>
 
           <div v-if="editingUser" class="edit-panel">
             <h4>Redigera {{ editingUser.username }}</h4>
@@ -220,7 +237,6 @@
               <p class="hint">Hantera artiklar.</p>
             </div>
             <button class="text-btn" @click="loadMaterials">↻ Uppdatera</button>
-            <router-link class="btn" to="/add-material">+ Lägg till</router-link>
           </div>
 
           <div class="filter-row">
@@ -245,6 +261,23 @@
             </div>
             <p v-if="filteredMaterials.length === 0" class="muted">Inga läsmaterial hittades.</p>
           </div>
+
+          <div class="divider"></div>
+          <h4>Skapa nytt material</h4>
+          <form class="material-form" @submit.prevent="createMaterial">
+            <label>Titel
+              <input v-model="newMaterialTitle" required />
+            </label>
+            <label>Innehåll
+              <textarea v-model="newMaterialContent" rows="4" required></textarea>
+            </label>
+            <div class="edit-actions">
+              <button class="btn" type="submit">Spara</button>
+              <button class="btn secondary" type="button" @click="resetMaterialForm">Rensa</button>
+            </div>
+            <p v-if="materialError" class="error">{{ materialError }}</p>
+            <p v-if="materialMessage" class="success">{{ materialMessage }}</p>
+          </form>
 
           <div v-if="editMaterial" class="edit-panel">
             <h4>Redigera material</h4>
@@ -301,9 +334,15 @@ export default {
       editMaterial: null,
       editExerciseQuestions: [],
       apiBase: API_BASE,
+      userSearch: "",
+      userRoleFilter: "all",
       exerciseSearch: "",
       exerciseTypeFilter: "all",
       materialSearch: "",
+      newMaterialTitle: "",
+      newMaterialContent: "",
+      materialMessage: "",
+      materialError: "",
     };
   },
 
@@ -634,8 +673,55 @@ export default {
         alert("❌ Kunde inte ta bort material");
       }
     },
+    async createMaterial() {
+      this.materialMessage = "";
+      this.materialError = "";
+      try {
+        const token = this.csrfToken();
+        const res = await fetch(`${this.apiBase}/materials.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
+          body: JSON.stringify({
+            Title: this.newMaterialTitle,
+            Content: this.newMaterialContent,
+            csrf_token: token,
+          }),
+        });
+        const out = await res.json();
+        if (out.success) {
+          this.materialMessage = "Material sparat!";
+          this.resetMaterialForm();
+          this.loadMaterials();
+        } else {
+          this.materialError = out.error || "Kunde inte spara.";
+        }
+      } catch (err) {
+        console.error(err);
+        this.materialError = "Kunde inte spara material.";
+      }
+    },
+    resetMaterialForm() {
+      this.newMaterialTitle = "";
+      this.newMaterialContent = "";
+    },
   },
   computed: {
+    filteredUsers() {
+      let list = [...this.users];
+      if (this.userSearch.trim()) {
+        const term = this.userSearch.trim().toLowerCase();
+        list = list.filter((u) => (u.username || "").toLowerCase().includes(term));
+      }
+      if (this.userRoleFilter !== "all") {
+        const term = this.userRoleFilter.toLowerCase();
+        list = list.filter((u) => {
+          const role = (u.role_name || u.role_id || "").toString().toLowerCase();
+          return role.includes(term);
+        });
+      }
+      return list;
+    },
     filteredExercises() {
       let list = [...this.exercises];
       if (this.exerciseSearch.trim()) {
@@ -749,6 +835,9 @@ select {
   list-style: none;
   padding: 0;
   margin: 0;
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 0.25rem;
 }
 .user-item {
   display: flex;
