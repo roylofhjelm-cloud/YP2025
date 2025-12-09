@@ -42,11 +42,13 @@ export default {
     modelValue: {
       deep: true,
       handler(val) {
+        // sync selection when parent resets or changes
         this.selected = val?.userAnswer ?? null;
       },
     },
   },
   methods: {
+    // Emit user choice with correctness
     update() {
       const correct = this.data.answer;
       const isCorrect = this.selected === correct;

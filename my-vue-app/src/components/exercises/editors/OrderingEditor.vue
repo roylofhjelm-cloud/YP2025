@@ -25,6 +25,7 @@ export default {
 
   computed: {
     data: {
+      // Normalize modelValue into a predictable shape
       get() {
         const d = this.modelValue || {};
         return {
@@ -39,17 +40,21 @@ export default {
   },
 
   methods: {
+    // Update main instruction text
     updateText(v) {
       this.data = { ...this.data, text: v };
     },
+    // Update an item at index
     updateItem(i, v) {
       const items = [...this.data.items];
       items[i] = v;
       this.data = { ...this.data, items };
     },
+    // Append blank item
     addItem() {
       this.data = { ...this.data, items: [...this.data.items, ""] };
     },
+    // Remove item by index
     removeItem(i) {
       this.data = {
         ...this.data,

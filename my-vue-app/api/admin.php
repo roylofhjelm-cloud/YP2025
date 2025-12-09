@@ -63,14 +63,8 @@ if ($action === "login") {
   $stmt->execute([$username]);
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-  // allow legacy plaintext match, admin123 override, or hashed password
-  $validPassword = false;
-  if ($user) {
-    $validPassword =
-      $password === "admin123" ||
-      $password === ($user["password"] ?? "") ||
-      password_verify($password, $user["password"] ?? "");
-  }
+  // Only accept hashed passwords
+  $validPassword = $user && password_verify($password, $user["password"] ?? "");
 
   if ($user && $validPassword) {
     session_regenerate_id(true);

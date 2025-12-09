@@ -31,6 +31,7 @@ export default {
 
   computed: {
     data: {
+      // Normalize modelValue to instruction + pairs list
       get() {
         const d = this.modelValue || {};
         return {
@@ -47,20 +48,24 @@ export default {
   },
 
   methods: {
+    // Update instruction text
     updateText(v) {
       this.data = { ...this.data, text: v };
     },
+    // Update a pair field at index
     updatePair(i, key, v) {
       const pairs = [...this.data.pairs];
       pairs[i] = { ...pairs[i], [key]: v };
       this.data = { ...this.data, pairs };
     },
+    // Append a blank pair row
     addPair() {
       this.data = {
         ...this.data,
         pairs: [...this.data.pairs, { left: "", right: "" }],
       };
     },
+    // Remove pair by index
     removePair(i) {
       this.data = {
         ...this.data,

@@ -78,6 +78,7 @@ export default {
   },
 
   methods: {
+    // Shuffle items to present a randomized order
     shuffleItems(items) {
       const arr = Array.isArray(items) ? [...items] : [];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -104,6 +105,7 @@ export default {
       this.localOrder = arr;
     },
 
+    // Emit answer payload with correctness flag
     emitAnswer() {
       const correctOrder = this.data?.items || [];
       const isCorrect =

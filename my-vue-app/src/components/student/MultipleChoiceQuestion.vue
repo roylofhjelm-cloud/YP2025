@@ -39,11 +39,13 @@ export default {
     modelValue: {
       deep: true,
       handler(val) {
+        // keep local selection in sync when parent resets
         this.selected = val?.userAnswer ?? null;
       },
     },
   },
   methods: {
+    // Emit current choice with correctness info
     update() {
       const correctIndex = this.data.options.findIndex(o => o.isCorrect);
       const isCorrect = this.selected === correctIndex;

@@ -71,7 +71,6 @@
             <select v-model="userRoleFilter" class="filter-input">
               <option value="all">Alla roller</option>
               <option value="student">Student</option>
-              <option value="teacher">Lärare</option>
               <option value="admin">Admin</option>
             </select>
           </div>
@@ -119,7 +118,6 @@
               Roll
               <select v-model="editingUser.role">
                 <option value="student">Student</option>
-                <option value="teacher">Lärare</option>
                 <option value="admin">Admin</option>
               </select>
             </label>
@@ -152,12 +150,12 @@
             />
             <select v-model="exerciseTypeFilter" class="filter-input">
               <option value="all">Alla typer</option>
-              <option value="mcq">mcq</option>
-              <option value="true_false">true_false</option>
-              <option value="match">match</option>
-              <option value="ordering">ordering</option>
-              <option value="fill_blank">fill_blank</option>
-              <option value="mixed">mixed</option>
+              <option value="mcq">Flerval</option>
+              <option value="true_false">Sant/falskt</option>
+              <option value="match">Para ihop</option>
+              <option value="ordering">Ordning</option>
+              <option value="fill_blank">Textluckor</option>
+              <option value="mixed">Blandad</option>
             </select>
           </div>
 
@@ -166,7 +164,7 @@
             <div v-for="ex in filteredExercises" :key="ex.Exercise_Id" class="list-row">
               <div>
                 <strong>{{ ex.Title || 'Namnlös' }}</strong>
-                <div class="muted">{{ ex.Type }}</div>
+                <div class="muted">{{ typeLabel(ex.Type) }}</div>
               </div>
               <div class="row-actions">
                 <button class="text-btn" @click="startEditExercise(ex)">Redigera</button>
@@ -353,9 +351,11 @@ export default {
   },
 
   methods: {
+    // Read CSRF token from storage for write requests
     csrfToken() {
       return localStorage.getItem("csrf_token") || "";
     },
+    // Fetch all users for the admin list
     async loadUsers() {
       this.loadingUsers = true;
       this.formError = "";
@@ -383,6 +383,7 @@ export default {
       }
     },
 
+    // Create a new user via admin endpoint
     async createUser() {
       this.formError = "";
       this.formSuccess = "";
@@ -399,11 +400,11 @@ export default {
         password: this.newUser.password,
         csrf_token: this.csrfToken(),
         role: (() => {
-          const map = { student: 1, teacher: 2, admin: 3 };
+          const map = { student: 1, admin: 3 };
           const r = this.newUser.role;
           if (typeof r === "string" && map[r]) return map[r];
           const num = Number(r);
-          return [1, 2, 3].includes(num) ? num : 1;
+          return [1, 3].includes(num) ? num : 1;
         })(), // default student
       };
 
@@ -432,9 +433,10 @@ export default {
       }
     },
 
+    // Prefill edit form with selected user
     startEdit(user) {
       const role = user.role_id || user.role_name || "student";
-      const roleMap = { 1: "student", 2: "teacher", 3: "admin", Student: "student", Admin: "admin" };
+      const roleMap = { 1: "student", 2: "student", 3: "admin", Student: "student", Admin: "admin" };
       this.editingUser = {
         id: user.u_id,
         username: user.username,
@@ -448,6 +450,7 @@ export default {
       this.editingUser = null;
     },
 
+    // Persist edits to an existing user
     async saveEdit() {
       if (!this.editingUser) return;
       const payload = {
@@ -457,11 +460,11 @@ export default {
         email: this.editingUser.email,
         csrf_token: this.csrfToken(),
         role: (() => {
-          const map = { student: 1, teacher: 2, admin: 3 };
+          const map = { student: 1, admin: 3 };
           const r = this.editingUser.role;
           if (typeof r === "string" && map[r]) return map[r];
           const num = Number(r);
-          return [1, 2, 3].includes(num) ? num : 1;
+          return [1, 3].includes(num) ? num : 1;
         })(),
       };
       if (this.editingUser.password) {
@@ -484,6 +487,7 @@ export default {
       }
     },
 
+    // Delete a user after confirmation
     async deleteUser(user) {
       const id = user.u_id;
       if (!id) return;
@@ -512,6 +516,17 @@ export default {
         fill_blank: "FillBlankEditor",
       }[type] || "div";
     },
+    typeLabel(t) {
+      const map = {
+        mcq: "Flerval",
+        true_false: "Sant/falskt",
+        match: "Para ihop",
+        ordering: "Ordning",
+        fill_blank: "Textluckor",
+        mixed: "Blandad",
+      };
+      return map[(t || "").toLowerCase()] || t || "";
+    },
 
     normalizeType(t) {
       const map = {
@@ -538,6 +553,7 @@ export default {
       this.editExerciseQuestions.splice(idx, 1);
     },
 
+    // Fetch exercise list for the admin table
     async loadExercises() {
       this.loadingExercises = true;
       try {
@@ -551,6 +567,7 @@ export default {
       }
     },
 
+    // Load a single exercise for editing (including questions)
     async startEditExercise(ex) {
       this.editExercise = null;
       this.editExerciseQuestions = [];
@@ -574,6 +591,7 @@ export default {
       this.editExercise = null;
       this.editExerciseQuestions = [];
     },
+    // Save edited exercise + questions
     async saveExerciseEdit() {
       if (!this.editExercise?.Exercise_Id) return;
       const res = await fetch(`${this.apiBase}/exercises.php`, {
@@ -603,6 +621,7 @@ export default {
         alert("❌ Kunde inte spara övning");
       }
     },
+    // Delete an exercise
     async deleteExercise(ex) {
       if (!confirm(`Ta bort övning "${ex.Title || ex.Exercise_Id}"?`)) return;
       const res = await fetch(`${this.apiBase}/exercises.php`, {
@@ -619,6 +638,7 @@ export default {
       }
     },
 
+    // Fetch materials for admin view
     async loadMaterials() {
       this.loadingMaterials = true;
       try {
@@ -637,6 +657,7 @@ export default {
     cancelMaterialEdit() {
       this.editMaterial = null;
     },
+    // Save edited material
     async saveMaterialEdit() {
       if (!this.editMaterial?.Material_Id) return;
       const res = await fetch(`${this.apiBase}/materials.php`, {
@@ -658,6 +679,7 @@ export default {
         alert("❌ Kunde inte spara material");
       }
     },
+    // Delete a material
     async deleteMaterial(m) {
       if (!confirm(`Ta bort material "${m.Title}"?`)) return;
       const res = await fetch(`${this.apiBase}/materials.php`, {
@@ -673,6 +695,7 @@ export default {
         alert("❌ Kunde inte ta bort material");
       }
     },
+    // Create new material
     async createMaterial() {
       this.materialMessage = "";
       this.materialError = "";

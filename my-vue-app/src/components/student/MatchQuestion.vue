@@ -52,6 +52,7 @@ export default {
     modelValue: {
       deep: true,
       handler(val) {
+        // If parent clears answers, reset selections
         if (!val || !val.userAnswer) {
           this.localMatches = Array.isArray(this.data?.pairs)
             ? this.data.pairs.map(() => "")
@@ -62,6 +63,7 @@ export default {
     "data.pairs": {
       deep: true,
       handler(pairs) {
+        // When pairs change, reshuffle right-hand options and reset state
         this.rightOptions = this.shuffleRights(pairs);
         this.localMatches = Array.isArray(pairs) ? pairs.map(() => "") : [];
       },
@@ -69,6 +71,7 @@ export default {
   },
 
   methods: {
+    // Shuffle the right-hand answers to avoid order hints
     shuffleRights(pairs) {
       const arr = Array.isArray(pairs) ? pairs.map(p => p.right) : [];
       for (let i = arr.length - 1; i > 0; i--) {
@@ -77,6 +80,7 @@ export default {
       }
       return arr;
     },
+    // Emit whether current selections match the correct mapping
     emitAnswer() {
       const correctRights = (this.data?.pairs || []).map(p => p.right);
       const user = this.localMatches;

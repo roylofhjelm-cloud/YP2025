@@ -85,6 +85,7 @@ router.beforeEach((to, from, next) => {
   const admin = localStorage.getItem("admin_id");
   const student = localStorage.getItem("student_id");
 
+  // Admin-only pages
   if (
     (to.path === "/admin" || to.path === "/add" || to.path === "/add-material") &&
     !admin
@@ -92,12 +93,15 @@ router.beforeEach((to, from, next) => {
     return next("/login");
   }
 
-  if (to.path === "/home" && !student && !admin) {
-    return next("/login-student");
-  }
+  // Pages that require any logged-in user (student or admin)
+  const needsLogin =
+    to.path === "/home" ||
+    to.path === "/account" ||
+    to.path === "/materials" ||
+    to.path.startsWith("/exercise/");
 
-  if (to.path === "/account" && !admin && !student) {
-    return next("/login");
+  if (needsLogin && !student && !admin) {
+    return next("/login-student");
   }
 
   next();

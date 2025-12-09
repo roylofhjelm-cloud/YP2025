@@ -138,9 +138,11 @@ export default {
   name: "HomePage",
   data() {
     return {
+      // Session info and fetched data
       user: null,
       progress: null,
       exercises: [],
+      // UI state for filtering/sorting
       hideCompleted: true,
       sortMode: "title",
       statusFilter: "all",
@@ -149,6 +151,7 @@ export default {
     };
   },
   computed: {
+    // Derived level/XP numbers for the header block
     levelNumber() {
       return this.progress?.level?.id || 1;
     },
@@ -160,6 +163,7 @@ export default {
       if (!next) return 100;
       return Math.min(100, Math.round((this.userXp / next) * 100));
     },
+    // Best score per exercise keyed by id (for badges)
     exerciseStatus() {
       if (!this.progress || !Array.isArray(this.progress.results)) return {};
 
@@ -175,10 +179,12 @@ export default {
 
       return map;
     },
+    // Show the 5 latest results
     recentResults() {
       if (!this.progress?.results) return [];
       return this.progress.results.slice(0, 5);
     },
+    // Build unique category options from exercises
     categoryOptions() {
       const set = new Set();
       this.exercises.forEach((ex) => {
@@ -187,6 +193,7 @@ export default {
       });
       return Array.from(set).sort();
     },
+    // Apply filters and sorts to the exercise list
     filteredExercises() {
       let list = [...this.exercises];
 
@@ -229,6 +236,7 @@ export default {
     },
   },
   async mounted() {
+    // Decide which role is logged in from localStorage and redirect if missing
     const student = localStorage.getItem("student_id");
     const admin = localStorage.getItem("admin_id");
 
@@ -242,6 +250,7 @@ export default {
     }
 
     try {
+      // Fetch available exercises for the grid
       const ex = await fetch(`${API_BASE}/exercises.php`, { credentials: "include" });
       const data = await ex.json();
       this.exercises = Array.isArray(data) ? data : data.exercises || [];
@@ -251,6 +260,7 @@ export default {
     }
 
     try {
+      // Fetch user progress + results to fill stats and badges
       const res = await fetch(`${API_BASE}/user_progress.php?user_id=${this.user.id}`, {
         credentials: "include",
       });
@@ -261,6 +271,7 @@ export default {
     }
   },
   methods: {
+    // Map backend type strings to normalized internal codes
     normalizeType(type) {
       const map = {
         true_false: "true_false",
@@ -272,6 +283,7 @@ export default {
       const key = typeof type === "string" ? type : "";
       return map[key] || key || "other";
     },
+    // Human-readable label for type codes
     formatType(type) {
       const map = {
         true_false: "Sant eller falskt",
@@ -282,6 +294,7 @@ export default {
       };
       return map[type] || type;
     },
+    // Convert various result shapes to a percentage
     calculatePercent(result) {
       if (result && result.Percent !== undefined && result.Percent !== null) {
         return Math.round(Number(result.Percent));
@@ -295,23 +308,27 @@ export default {
       }
       return Math.round(Number(result?.Score || 0));
     },
+    // Class used to color badges
     badgeClass(p) {
       if (p >= 70) return "badge pass";
       if (p >= 50) return "badge warn";
       return "badge fail";
     },
+    // Enrich a score with stars/flags for UI
     buildStatus(percent) {
       if (percent >= 95) return { percent, stars: 3, failed: false, passed: true };
       if (percent >= 85) return { percent, stars: 2, failed: false, passed: true };
       if (percent >= 70) return { percent, stars: 1, failed: false, passed: true };
       return { percent, stars: 0, failed: true, passed: false };
     },
+    // Badge text for a given status object
     statusLabel(status) {
       if (!status) return "";
       if (status.failed) return "Failed";
       const starWord = status.stars === 1 ? "star" : "stars";
       return `${"⭐".repeat(status.stars)} ${status.stars} ${starWord}`;
     },
+    // Reset all filters back to defaults
     resetFilters() {
       this.sortMode = "title";
       this.statusFilter = "all";
@@ -497,12 +514,13 @@ export default {
 .exercise-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1.1rem;
+  align-items: start;
 }
 
 .exercise-card {
   background: var(--surface);
-  padding: 1.25rem 1.5rem;
+  padding: 1.1rem 1.2rem;
   border-radius: 14px;
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border);
@@ -511,7 +529,8 @@ export default {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 0.75rem;
+  word-break: break-word;
 }
 
 .exercise-card:hover {
@@ -530,11 +549,26 @@ export default {
   font-size: 1.8rem;
 }
 
+.card-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .desc {
   font-size: 0.9rem;
   color: var(--text-muted);
   margin-bottom: 1rem;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .type-tag {

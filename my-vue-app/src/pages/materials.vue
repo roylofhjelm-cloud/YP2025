@@ -67,6 +67,7 @@ export default {
     };
   },
   computed: {
+    // Client-side filter by title
     filteredMaterials() {
       if (!this.search.trim()) return this.materials;
       const term = this.search.trim().toLowerCase();
@@ -77,14 +78,17 @@ export default {
   },
 
   async mounted() {
+    // Load all materials for the logged-in user
     const res = await fetch(`${API_BASE}/materials.php`, { credentials: "include" });
     this.materials = await res.json();
   },
   methods: {
+    // Shorten content to a quick preview in the cards
     preview(text) {
       const clean = text || "";
       return clean.length > 180 ? clean.slice(0, 180) + "…" : clean;
     },
+    // Open the modal with full content
     openMaterial(m) {
       this.selected = m;
     },

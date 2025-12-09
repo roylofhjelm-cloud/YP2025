@@ -44,6 +44,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Student auth page: toggles between login and registration, stores session IDs/CSRF on success.
   data(){
     return {
       username:"",

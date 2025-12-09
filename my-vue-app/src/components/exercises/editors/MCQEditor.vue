@@ -30,6 +30,7 @@ export default {
 
   computed: {
     data: {
+      // Ensure text + at least two options exist
       get() {
         const d = this.modelValue || {};
 
@@ -50,20 +51,24 @@ export default {
   },
 
   methods: {
+    // Update question text
     updateText(val) {
       this.data = { ...this.data, text: val };
     },
+    // Update a specific option field
     updateOption(i, key, val) {
       const opts = [...this.data.options];
       opts[i] = { ...opts[i], [key]: val };
       this.data = { ...this.data, options: opts };
     },
+    // Append a blank option
     addOption() {
       this.data = {
         ...this.data,
         options: [...this.data.options, { text: "", isCorrect: false }],
       };
     },
+    // Remove option by index
     removeOption(i) {
       this.data = {
         ...this.data,

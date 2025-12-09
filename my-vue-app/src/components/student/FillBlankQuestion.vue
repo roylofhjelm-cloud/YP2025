@@ -59,11 +59,13 @@ export default {
     };
   },
   computed: {
+    // Split source text into word tokens
     wordList() {
       const text = this.data?.text || "";
       const matches = text.match(/\S+/g);
       return matches ? matches : [];
     },
+    // Normalize blanks from backend payload
     normalizedBlanks() {
       const raw = Array.isArray(this.data?.blanks) ? this.data.blanks : [];
       if (raw.length) {
@@ -77,6 +79,7 @@ export default {
       const answers = this.initialAnswers();
       return answers.map((w) => ({ index: null, word: w }));
     },
+    // Resolve blanks to positions in the text
     positionedBlanks() {
       const words = [...this.wordList];
       const used = new Set();
@@ -99,6 +102,7 @@ export default {
       blanks.sort((a, b) => a.position - b.position);
       return blanks;
     },
+    // Quick lookup of blank slot index by word position
     blankSlotByPosition() {
       const map = {};
       this.positionedBlanks.forEach((b, idx) => {
@@ -106,12 +110,14 @@ export default {
       });
       return map;
     },
+    // Correct answer sequence for comparison
     correctAnswers() {
       if (this.positionedBlanks.length) {
         return this.positionedBlanks.map((b) => b.word);
       }
       return this.initialAnswers();
     },
+    // Word bank shown to the user
     wordBank() {
       const words =
         (Array.isArray(this.data?.words) && this.data.words.length
@@ -137,6 +143,7 @@ export default {
     this.resetAnswers();
   },
   methods: {
+    // Derive candidate words from options/answers
     optionPool() {
       const opts =
         (Array.isArray(this.data?.options) && this.data.options.length
@@ -155,11 +162,13 @@ export default {
       }
       return [""];
     },
+    // Create empty slots matching blanks count
     defaultBlanks(raw) {
       const answers = this.initialAnswers(raw);
       const count = (this.positionedBlanks && this.positionedBlanks.length) || answers.length || 1;
       return Array(count).fill("");
     },
+    // Reset all user answers from model or defaults
     resetAnswers() {
       this.userAnswers = this.modelValue?.userAnswer
         ? [...this.modelValue.userAnswer]
@@ -178,6 +187,7 @@ export default {
       const idx = this.userAnswers.findIndex((a) => !a);
       this.setAnswer(idx === -1 ? 0 : idx, word);
     },
+    // Set a specific slot answer
     setAnswer(slotIdx, word) {
       if (this.disabled) return;
       if (slotIdx === undefined || slotIdx === null || slotIdx < 0) return;
@@ -186,6 +196,7 @@ export default {
       this.userAnswers = answers;
       this.update();
     },
+    // Emit correctness and answer payload
     update() {
       const correct = this.correctAnswers;
       const user = this.userAnswers.slice(0, correct.length);

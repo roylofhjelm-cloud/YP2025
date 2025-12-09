@@ -26,6 +26,7 @@
 import { API_BASE } from "@/apiConfig";
 
 export default {
+  // Admin auth page: posts credentials, stores admin info + CSRF, then routes to dashboard.
   name: "AdminLoginPage",
   data() {
     return {

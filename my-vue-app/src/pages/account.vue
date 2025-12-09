@@ -55,9 +55,11 @@ export default {
     return { profile: null };
   },
   computed: {
+    // Current level number derived from profile payload
     levelNumber() {
       return this.profile?.level?.level_id ?? 1;
     },
+    // Progress bar fill based on current XP vs next level
     xpPercent() {
       if (!this.profile.next_level_xp) return 100;
       const xp = this.profile.user.xp;
@@ -65,6 +67,7 @@ export default {
     }
   },
   async mounted() {
+    // Fetch profile + stats for whichever role is logged in
     const uid = localStorage.getItem("student_id") || localStorage.getItem("admin_id");
     if (!uid) return;
     const res = await fetch(`${API_BASE}/get_user_stats.php?user_id=${uid}`, {
@@ -73,6 +76,7 @@ export default {
     this.profile = await res.json();
   },
   methods: {
+    // Send user back to the home/dashboard
     goHome() {
       this.$router.push("/home");
     }

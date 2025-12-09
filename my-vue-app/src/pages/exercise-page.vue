@@ -91,9 +91,11 @@ export default {
   },
   data() {
     return {
+      // Loaded exercise payload and prepared questions
       exercise: null,
       questions: [],
       answers: [],
+      // UI state + score animation
       hasStarted: false,
       score: 0,
       animatedScore: 0,
@@ -109,6 +111,7 @@ export default {
     };
   },
   async mounted() {
+    // Fetch exercise + questions by id from the route
     const id = this.$route.params.id;
     try {
       const res = await fetch(`${API_BASE}/exercise.php?id=${id}`, {
@@ -135,6 +138,7 @@ export default {
     }
   },
   methods: {
+    // Pick the correct question component for a given type
     getComponent(type) {
       return {
         mcq: "MultipleChoiceQuestion",
@@ -145,12 +149,14 @@ export default {
       }[type] || "div";
     },
 
+    // Keep answers reactive per index
     updateAnswer(index, value) {
       this.$set
         ? this.$set(this.answers, index, value)
         : (this.answers[index] = value);
     },
 
+    // Animate the score counting up
     startScoreAnimation() {
       const target = this.score;
       let start = 0;
@@ -164,6 +170,7 @@ export default {
       requestAnimationFrame(step);
     },
 
+    // Simple canvas confetti for pass cases
     triggerConfetti() {
       const canvas = this.$refs.confettiCanvas;
       if (!canvas) return;
@@ -195,7 +202,7 @@ export default {
     },
 
     async checkAnswers() {
-      // 1️⃣ Calculate score (you already had this part)
+      // Calculate score from child components
       let correct = 0;
       this.questions.forEach((q, i) => {
         const ans = this.answers[i];
@@ -209,7 +216,7 @@ export default {
       const user_id = localStorage.getItem("student_id");
       const exercise_id = this.$route.params.id;
 
-      // 2️⃣ Save score + XP using your endpoint
+      // Save score + XP server-side
       if (user_id) {
         const token = localStorage.getItem("csrf_token");
         await fetch(`${API_BASE}/save_result.php`, {

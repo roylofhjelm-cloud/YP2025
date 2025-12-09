@@ -33,6 +33,7 @@ export default {
 
   computed: {
     data: {
+      // Normalize modelValue into text + boolean answer
       get() {
         const d = this.modelValue || {};
         return {
@@ -47,9 +48,11 @@ export default {
   },
 
   methods: {
+    // Update question text
     updateText(v) {
       this.data = { ...this.data, text: v };
     },
+    // Set the correct boolean answer
     updateAnswer(v) {
       this.data = { ...this.data, answer: v };
     },

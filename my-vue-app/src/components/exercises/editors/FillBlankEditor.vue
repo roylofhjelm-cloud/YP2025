@@ -78,6 +78,7 @@ export default {
   },
 
   methods: {
+    // Pull props into local state, build answers/words as needed
     hydrateFromModel() {
       const d = this.modelValue || {};
       const next = {
@@ -98,9 +99,11 @@ export default {
         .filter((i) => i !== null);
       this.setData(next);
     },
+    // Update text and keep blanks synced
     updateText(v) {
       this.setData({ ...this.localData, text: v });
     },
+    // Toggle a word index as a blank and sync answers/word bank
     toggleBlank(idx) {
       const exists = this.selectedIndexes.includes(idx);
       let nextIdx = exists
@@ -113,10 +116,12 @@ export default {
       this.selectedIndexes = nextIdx;
       this.setData({ ...this.localData, blanks, answers, words });
     },
+    // Add blank word slot
     addOption() {
       const words = [...this.localData.words, ""];
       this.setData({ ...this.localData, words });
     },
+    // Remove word from bank
     removeOption(i) {
       const words = this.localData.words.filter((_, idx) => idx !== i);
       this.setData({ ...this.localData, words });
